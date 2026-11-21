@@ -5,3 +5,7 @@ async function request<T>(path:string,init?:RequestInit):Promise<T>{const res=aw
 export const getTournament=()=>request<TournamentState>('tournament');
 export const verifyAdmin=(data:{password:string})=>request<boolean>('login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});
 export const saveTournament=(data:TournamentState&{password:string})=>request<{ok:boolean}>('tournament',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});
+
+export type Analytics={online:number;today:number;total:number;peak:number;updatedAt:number};
+export const sendPresence=(id:string)=>request<{ok:boolean}>('presence',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id}),keepalive:true});
+export const getAnalytics=(password:string)=>request<Analytics>('analytics',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})});
