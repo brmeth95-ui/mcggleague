@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS tournament_state (id INTEGER PRIMARY KEY, content TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS tournament_admin (id INTEGER PRIMARY KEY, password_hash TEXT NOT NULL);
+INSERT OR IGNORE INTO tournament_admin (id,password_hash) VALUES (1,'3dd3372442a7bf61d236587299bce3ee7d691bedcce24fb6b799052510e32739');
