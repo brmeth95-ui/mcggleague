@@ -1,1 +1,13 @@
-{"$schema":"node_modules/wrangler/config-schema.json","name":"mcggleaguewws","main":"src/worker.ts","compatibility_date":"2026-11-01","assets":{"directory":"./dist","binding":"ASSETS","run_worker_first":["/api/*"]},"d1_databases":[{"binding":"DB","database_name":"mcggleague-db","database_id":"1429bf94-6b18-426c-a653-ad0811c56619"}]}
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mcggleaguewws",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  }
+}
