@@ -10,10 +10,10 @@ const winner=(m:Match)=>m.sa===2&&m.sb<2?m.a:m.sb===2&&m.sa<2?m.b:null;
 const loser=(m:Match)=>winner(m)===null?null:winner(m)===m.a?m.b:m.a;
 function recalc(ms:Match[]){const m=ms.map(x=>({...x,picks:[...x.picks],pickPlayers:[...(x.pickPlayers||Array(24).fill(""))]})); const slots:[[number,number|null,number|null],[number,number|null,number|null],[number,number|null,number|null],[number,number|null,number|null]]=[[4,winner(m[0]),winner(m[1])],[5,winner(m[2]),winner(m[3])],[6,winner(m[4]),winner(m[5])],[7,loser(m[4]),loser(m[5])]];for(const [i,a,b] of slots){if(m[i].a!==a||m[i].b!==b)m[i]=empty(a,b)}return m}
 function TeamPlaque({name}:{name:string}){
- const match=name.trim().match(/^(BB|VST|TTTS|CMT|СМТ|WWS)(?:[\s_–—-]*(\d+))?$/i);
- if(!match)return <span>{name}</span>;
- const clan=match[1].toUpperCase().replace("СМТ","CMT").toLowerCase();
- return <span className="teamplaque" title={name}><img src={"/assets/clan-"+clan+".webp"} alt={match[1]} />{match[2]&&<span className="plaquenumber">#{match[2]}</span>}</span>;
+ const key=name.trim().toLowerCase().replace("смт","cmt").replace(/\s+/g,"").replace(/[–—_]/g,"-");
+ const images=new Set(["cmt-1","cmt-2","wws-1","wws-2","vst","ttts","bb-1","bb-2"]);
+ if(!images.has(key))return <span>{name}</span>;
+ return <span className="teamplaque teamplaque-new" title={name}><img src={"/assets/team-"+key+".webp"} alt={name} loading="lazy"/></span>;
 }
 function ArenaIcon({name}:{name:string}){
  const paths:Record<string,React.ReactNode>={
@@ -211,4 +211,14 @@ main h1,main h2,main h3,main h4,main h5,main h6,main nav button,main .stat span,
 main .player,main .detailplayer,main .rulegrid p,main .rankinghead p{line-height:1.6}
 main nav button{font-size:12px}main .round h2{font-size:11px}main .mini-action{font-size:9px}main .matchhead{font-size:9px}main .side{font-size:12px}
 @media(max-width:700px){main nav button{font-size:10px}main .stat span{font-size:9px}main .stat strong{font-size:14px}main .boardtitle h1{font-size:14px}main .previewbanner{font-size:8px}main .mini-action{font-size:8px}main .rankingrow{font-size:10px}}
+
+/* Exact supplied team plaques (names are part of image) */
+.teamplaque-new{display:inline-flex;width:100%;max-width:100%;align-items:center;justify-content:flex-start;min-width:0}
+.teamplaque-new img{display:block;width:100%;height:auto;max-height:68px;object-fit:contain;object-position:left center;min-width:0;max-width:100%}
+.matchteamname{flex:1 1 auto;min-width:85px}
+.matchteamname .teamplaque-new img{width:min(100%,160px);max-width:160px;max-height:49px}
+.rankteam .teamplaque-new img{width:min(100%,215px);max-height:65px}
+.teamplaqueheading .teamplaque-new img{width:min(100%,350px);max-height:90px}
+.detaildialog .teamplaque-new img{max-height:65px}
+@media(max-width:700px){.matchteamname .teamplaque-new img{max-width:145px;max-height:48px}.rankteam .teamplaque-new img{max-width:150px}.teamplaqueheading .teamplaque-new img{max-width:290px}}
 `}</style></main>}
