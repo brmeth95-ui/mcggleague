@@ -1,25 +1,54 @@
 import {useEffect,useMemo,useState} from "react";
 import type {ChangeEvent} from "react";
 import "./Stats.css";
+import {recognizeScreenshot} from "./vision";
 type Team={name:string;players:string[];reserves:string[]};
 type Match={a:number|null;b:number|null;sa:number;sb:number;picks:string[];pickPlayers:string[]};
-type Player={team:number;nick:string;commander:string;result:string;medal:string};
-type Game={key:string;match:number;game:number;winner:number;players:Player[]};
+type Player={team:number;nick:string;commander:string;level:string;medal:string};
+export type Game={key:string;match:number;game:number;winner:number;players:Player[]};
 const storageKey="mcgg-preview-stats-v1";
 const wr=(a:number,b:number)=>b?Math.round(100*a/b)+"%":"—";
 const normal=(s:string)=>s.toLowerCase().replace(/[^a-zа-яё0-9]/g,"");
-export default function Stats({teams,matches}:{teams:Team[];matches:Match[]}){
+export default function Stats({teams,matches,onSaved}:{teams:Team[];matches:Match[];onSaved?:(games:Game[])=>void}){
  const [games,setGames]=useState<Game[]>([]),[edit,setEdit]=useState<Game|null>(null);
  const [section,setSection]=useState("teams"),[note,setNote]=useState(""),[raw,setRaw]=useState(""),[photo,setPhoto]=useState(""),[ocrBusy,setOcrBusy]=useState(false);
- useEffect(()=>{try{const a=JSON.parse(localStorage.getItem(storageKey)||"[]");if(Array.isArray(a))setGames(a.filter(x=>x&&x.match>=0&&x.match<8&&x.game>=1&&x.game<=3&&x.players?.length===8));}catch{}},[]);
- const write=(a:Game[])=>{setGames(a);try{localStorage.setItem(storageKey,JSON.stringify(a));setNote("Сохранено только в этом браузере. Основная база не менялась.");}catch{setNote("Не удалось сохранить данные в браузере.");}};
+ const [ocrProgress,setOcrProgress]=useState(""),[leftTeam,setLeftTeam]=useState<"a"|"b">("a");
+ useEffect(()=>{try{const a=JSON.parse(localStorage.getItem(storageKey)||"[]");if(Array.isArray(a)){const clean=a.filter(x=>x&&x.match>=0&&x.match<8&&x.game>=1&&x.game<=3&&x.players?.length===8).map((g:Game)=>({...g,players:g.players.map((p:any)=>({...p,level:typeof p.level==="string"?p.level:""}))}));setGames(clean);onSaved?.(clean);}}catch{}},[]);
+ const write=(a:Game[])=>{setGames(a);onSaved?.(a);try{localStorage.setItem(storageKey,JSON.stringify(a));setNote("Сохранено только в этом браузере. Основная база не менялась.");}catch{setNote("Не удалось сохранить данные в браузере.");}};
  const available=matches.map((m,i)=>({m,i})).filter(x=>x.m.a!==null&&x.m.b!==null);
  function begin(i:number,g:number){const m=matches[i];if(!m||m.a===null||m.b===null)return;const key=i+"-"+g,previous=games.find(x=>x.key===key);
- const players=(["a","b"] as const).flatMap((side,j)=>Array.from({length:4},(_,n)=>{const team=m[side] as number,pos=(g-1)*8+j*4+n;return {team,nick:m.pickPlayers?.[pos]||teams[team].players[n]||"",commander:m.picks?.[pos]||"",result:"",medal:""};}));
- setEdit(previous?JSON.parse(JSON.stringify(previous)):{key,match:i,game:g,winner:-1,players});setRaw("");setNote("");if(photo)URL.revokeObjectURL(photo);setPhoto("");}
+ const players=(["a","b"] as const).flatMap((side,j)=>Array.from({length:4},(_,n)=>{const team=m[side] as number,pos=(g-1)*8+j*4+n;return {team,nick:m.pickPlayers?.[pos]||teams[team].players[n]||"",commander:m.picks?.[pos]||"",level:"",medal:""};}));
+ setEdit(previous?JSON.parse(JSON.stringify(previous)):{key,match:i,game:g,winner:-1,players});setLeftTeam("a");setOcrProgress("");setRaw("");setNote("");if(photo)URL.revokeObjectURL(photo);setPhoto("");}
  const change=(i:number,patch:Partial<Player>)=>setEdit(o=>o?{...o,players:o.players.map((p,j)=>i===j?{...p,...patch}:p)}:o);
  function submit(){if(!edit)return;const m=matches[edit.match];if(![m.a,m.b].includes(edit.winner)){setNote("Выбери победителя карты.");return;}if(edit.players.some(p=>!p.nick.trim())){setNote("Проверь имена всех восьми игроков.");return;}write([...games.filter(g=>g.key!==edit.key),edit].sort((a,b)=>a.match-b.match||a.game-b.game));setEdit(null);}
- async function upload(e:ChangeEvent<HTMLInputElement>){const file=e.target.files?.[0];if(!file)return;if(photo)URL.revokeObjectURL(photo);setPhoto(URL.createObjectURL(file));setOcrBusy(true);setNote("");try{const {createWorker}=await import("tesseract.js");const worker=await createWorker("rus+eng");try{const result=await worker.recognize(file);const text=result.data.text||"";setRaw(text);const lines=text.split(/\r?\n/).map(x=>x.trim());setEdit(o=>o?{...o,players:o.players.map(p=>{const nick=normal(p.nick);const line=nick.length>=4?lines.find(t=>normal(t).includes(nick)):undefined;const score=line?.match(/\b\d{1,3}\s*[-–:]\s*\d{1,3}\b/)?.[0];return score?{...p,result:score}:p;})}:null);if(!text.trim())setNote("OCR не распознал текст, заполни вручную.");}finally{await worker.terminate();}}catch{setNote("Не удалось распознать изображение. Данные можно внести вручную.");}finally{setOcrBusy(false);}}
+ async function upload(e:ChangeEvent<HTMLInputElement>){
+  const file=e.target.files?.[0];if(!file)return;
+  if(photo)URL.revokeObjectURL(photo);
+  setPhoto(URL.createObjectURL(file));setOcrBusy(true);setNote("");setRaw("");setOcrProgress("");
+  try{
+   const result=await recognizeScreenshot(file,setOcrProgress);
+   setRaw(result.ocr);
+   const m=edit?matches[edit.match]:null;
+   const left=m?.[leftTeam],right=m?.[leftTeam==="a"?"b":"a"];
+   setEdit(prev=>{
+    if(!prev)return prev;
+    const updated=prev.players.map(p=>({...p}));
+    [left,right].forEach((tid,side)=>{
+     if(tid===null||tid===undefined)return;
+     const indices=updated.map((p,i)=>p.team===tid?i:-1).filter(i=>i>=0);
+     indices.forEach((index,row)=>{
+      const target=side*4+row;
+      if(result.levels[target]!==null)updated[index].level=String(result.levels[target]);
+      if(result.medals[target])updated[index].medal=result.medals[target]!;
+     });
+    });
+    return {...prev,players:updated};
+   });
+   const found=result.medals.filter(Boolean).length,levels=result.levels.filter(x=>x!==null).length;
+   setNote("Найдено медалей: "+found+"; уровней командиров: "+levels+"/8. "+result.warnings.join(" ")+" Обязательно проверь значения перед сохранением.");
+  }catch(err){setNote("Ошибка чтения изображения: "+String(err)+". Попробуй полный скриншот 16:9 или заполни вручную.");}
+  finally{setOcrBusy(false);setOcrProgress("");e.target.value="";}
+ }
  const ranked=teams.map((t,id)=>{const a=games.filter(g=>g.players.some(p=>p.team===id)),w=a.filter(g=>g.winner===id).length,bo3=matches.filter(m=>m.a===id&&m.sa===2||m.b===id&&m.sb===2).length;return {id,name:t.name,w,maps:a.length,bo3,mvp:a.reduce((n,g)=>n+g.players.filter(p=>p.team===id&&p.medal==="MVP").length,0)};}).sort((a,b)=>b.w-a.w||b.bo3-a.bo3||b.w/(b.maps||1)-a.w/(a.maps||1));
  const players=useMemo(()=>{const map=new Map<string,{name:string;team:number;maps:number;wins:number;mvp:number;carry:number;tank:number}>();for(const g of games)for(const p of g.players){const key=p.team+":"+normal(p.nick);let x=map.get(key);if(!x){x={name:p.nick,team:p.team,maps:0,wins:0,mvp:0,carry:0,tank:0};map.set(key,x);}x.maps++;x.wins+=Number(g.winner===p.team);x.mvp+=Number(p.medal==="MVP");x.carry+=Number(p.medal==="CARRY");x.tank+=Number(p.medal==="TANK");}return [...map.values()].sort((a,b)=>b.mvp-a.mvp||b.wins-a.wins||b.maps-a.maps);},[games]);
  const commanders=useMemo(()=>{const map=new Map<string,{name:string,picks:number,wins:number}>();for(const g of games)for(const p of g.players){if(!p.commander.trim())continue;const key=normal(p.commander);let x=map.get(key);if(!x){x={name:p.commander,picks:0,wins:0};map.set(key,x);}x.picks++;x.wins+=Number(g.winner===p.team);}return [...map.values()].sort((a,b)=>b.picks-a.picks||b.wins-a.wins);},[games]);
@@ -36,8 +65,9 @@ export default function Stats({teams,matches}:{teams:Team[];matches:Match[]}){
  {section==="commanders"&&<div className="tsScroll"><table><thead><tr><th>№</th><th>Командир</th><th>Пики</th><th>Победы</th><th>WR</th></tr></thead><tbody>{commanders.map((r,i)=><tr key={r.name}><td>{i+1}</td><td>{r.name}</td><td>{r.picks}</td><td>{r.wins}</td><td>{wr(r.wins,r.picks)}</td></tr>)}</tbody></table></div>}
  {section==="records"&&<div className="tsRecords">{[["Больше всего MVP",players[0]?.mvp?players[0].name:"Нет данных",players[0]?.mvp||0],["Чаще всех выбирали",commanders[0]?.name||"Нет данных",commanders[0]?.picks||0],["Побед на картах",ranked[0]?.w?ranked[0].name:"Нет данных",ranked[0]?.w||0]].map(([title,name,n])=><div key={title}><small>{title}</small><strong>{name}</strong><span>{n}</span></div>)}</div>}
  <div className="tsHistory"><h3>ПОДТВЕРЖДЁННЫЕ КАРТЫ</h3>{!games.length&&<p>Результатов пока нет.</p>}{games.map(g=><div key={g.key}><span>Матч {g.match+1} · Карта {g.game} · {teams[g.winner]?.name}</span><span><button onClick={()=>begin(g.match,g.game)}>Править</button><button onClick={()=>{if(confirm("Удалить карту?"))write(games.filter(x=>x.key!==g.key));}}>Удалить</button></span></div>)}</div>
- {edit&&<div className="tsShade" onClick={()=>setEdit(null)}><div className="tsModal" role="dialog" aria-modal="true" onClick={e=>e.stopPropagation()}><div className="tsModalTop"><h3>РЕЗУЛЬТАТ КАРТЫ</h3><button onClick={()=>setEdit(null)}>✕</button></div><div className="tsSelects"><label>Матч<select value={edit.match} onChange={e=>begin(Number(e.target.value),1)}>{available.map(({i,m})=><option key={i} value={i}>{i+1}. {teams[m.a!]?.name} — {teams[m.b!]?.name}</option>)}</select></label><label>Карта BO3<select value={edit.game} onChange={e=>begin(edit.match,Number(e.target.value))}>{[1,2,3].map(n=><option key={n} value={n}>Карта {n}</option>)}</select></label></div><label className="tsUpload">Скриншот (OCR)<input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} disabled={ocrBusy}/></label>{photo&&<img className="tsImg" src={photo} alt="Загруженный скриншот"/>}{ocrBusy&&<p>Распознаю текст…</p>}{raw&&<details><summary>Распознанный текст</summary><pre className="tsRaw">{raw}</pre></details>}<p className="tsHelp">Проверь распознанные ники. Медали и портреты командиров заполняются вручную.</p>
+ {edit&&<div className="tsShade" onClick={()=>setEdit(null)}><div className="tsModal" role="dialog" aria-modal="true" onClick={e=>e.stopPropagation()}><div className="tsModalTop"><h3>РЕЗУЛЬТАТ КАРТЫ</h3><button onClick={()=>setEdit(null)}>✕</button></div><div className="tsSelects"><label>Матч<select value={edit.match} onChange={e=>begin(Number(e.target.value),1)}>{available.map(({i,m})=><option key={i} value={i}>{i+1}. {teams[m.a!]?.name} — {teams[m.b!]?.name}</option>)}</select></label><label>Карта BO3<select value={edit.game} onChange={e=>begin(edit.match,Number(e.target.value))}>{[1,2,3].map(n=><option key={n} value={n}>Карта {n}</option>)}</select></label></div><label className="tsOrientation">Какая команда слева на скриншоте?<select value={leftTeam} onChange={e=>setLeftTeam(e.target.value as "a"|"b")}><option value="a">{teams[matches[edit.match].a!]?.name}</option><option value="b">{teams[matches[edit.match].b!]?.name}</option></select></label>
+ <label className="tsUpload">Скриншот (OCR + медали)<input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} disabled={ocrBusy}/></label>{photo&&<img className="tsImg" src={photo} alt="Загруженный скриншот"/>}{ocrBusy&&<p className="tsAlert">{ocrProgress||"Распознаю скриншот…"}</p>}{raw&&<details><summary>Распознанный текст</summary><pre className="tsRaw">{raw}</pre></details>}<p className="tsHelp">Проверь ники, УРН и найденные медали. MVP, Carry и Tank определяются по виду значка и могут ошибаться. Имя командира заполняется вручную. Скриншот должен быть целым, без обрезки.</p>
  <label>Победитель карты<select value={edit.winner} onChange={e=>setEdit({...edit,winner:Number(e.target.value)})}><option value={-1}>Выбери победителя</option>{(["a","b"] as const).map(side=><option key={side} value={matches[edit.match][side]!}>{teams[matches[edit.match][side]!]?.name}</option>)}</select></label>
- {(["a","b"] as const).map(side=>{const id=matches[edit.match][side];if(id===null)return null;return <div className="tsSquad" key={side}><h4>{teams[id]?.name}</h4>{edit.players.map((p,i)=>({p,i})).filter(({p})=>p.team===id).map(({p,i})=><div className="tsPlayer" key={i}><label>Игрок<select value={p.nick} onChange={e=>change(i,{nick:e.target.value})}>{[...new Set([p.nick,...teams[id].players,...teams[id].reserves].filter(Boolean))].map(x=><option key={x}>{x}</option>)}</select></label><label>Командир<input value={p.commander} onChange={e=>change(i,{commander:e.target.value})}/></label><label>Результат<input placeholder="17-1" value={p.result} onChange={e=>change(i,{result:e.target.value})}/></label><label>Медаль<select value={p.medal} onChange={e=>change(i,{medal:e.target.value})}><option value="">Нет</option><option>MVP</option><option>CARRY</option><option>TANK</option></select></label></div>)}</div>;})}
+ {(["a","b"] as const).map(side=>{const id=matches[edit.match][side];if(id===null)return null;return <div className="tsSquad" key={side}><h4>{teams[id]?.name}</h4>{edit.players.map((p,i)=>({p,i})).filter(({p})=>p.team===id).map(({p,i})=><div className="tsPlayer" key={i}><label>Игрок<select value={p.nick} onChange={e=>change(i,{nick:e.target.value})}>{[...new Set([p.nick,...teams[id].players,...teams[id].reserves].filter(Boolean))].map(x=><option key={x}>{x}</option>)}</select></label><label>Командир<input value={p.commander} onChange={e=>change(i,{commander:e.target.value})}/></label><label>УРН командира<input inputMode="numeric" placeholder="Напр. 190" value={p.level||""} onChange={e=>change(i,{level:e.target.value.replace(/[^0-9]/g,"").slice(0,3)})}/></label><label>Медаль<select value={p.medal} onChange={e=>change(i,{medal:e.target.value})}><option value="">Нет</option><option>MVP</option><option>CARRY</option><option>TANK</option></select></label></div>)}</div>;})}
  {note&&<p className="tsAlert">{note}</p>}<div className="tsBottom"><button onClick={()=>setEdit(null)}>Отмена</button><button onClick={submit} disabled={ocrBusy}>Подтвердить и пересчитать</button></div></div></div>}</section>;
 }
