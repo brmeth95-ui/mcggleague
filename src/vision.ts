@@ -5,7 +5,8 @@ const refs:Ref[]=[
  {file:"mvp-blue",label:"MVP",side:0},{file:"mvp-red",label:"MVP",side:1},
  {file:"mvp-purple",label:"MVP",side:0},{file:"mvp-gold",label:"MVP",side:1},
  {file:"carry-blue",label:"CARRY",side:0},{file:"carry-red",label:"CARRY",side:1},
- {file:"tank-blue",label:"TANK",side:0},{file:"tank-red",label:"TANK",side:1}
+ {file:"tank-blue",label:"TANK",side:0},{file:"tank-red",label:"TANK",side:1},
+ {file:"mvp-blue-extra",label:"MVP",side:0},{file:"mvp-red-extra",label:"MVP",side:1},{file:"mvp-red-alt",label:"MVP",side:1}
 ];
 const dim=54;
 async function imgFrom(file:File):Promise<ImageBitmap>{return createImageBitmap(file);}
