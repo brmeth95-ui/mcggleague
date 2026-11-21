@@ -74,7 +74,7 @@ const card=(i:number)=><div className="match" key={i}>
     </div>;
   })}
 </div>;
-return <main><div className="previewbanner">MCGG LEAGUE 2.0 · ТЕСТОВАЯ ВЕРСИЯ · Данные только для просмотра</div><header><div className="brand"><img className="officialmagic" src="/assets/official-orange-trim.webp" alt="Magic Chess Go Go"/></div><div className="edition">4 × 4 <span>BEST OF 3</span></div></header><section className="intro"><div className="heroart"><picture><source media="(max-width:700px)" srcSet="/assets/preview-mobile.webp"/><img className="previewhero" src="/assets/preview-hero.webp" alt="MCGG LEAGUE by WWS — турнир Magic Chess Go Go, 4 × 4, Best of 3"/></picture></div></section>
+return <main><header><div className="brand"><img className="officialmagic" src="/assets/official-orange-trim.webp" alt="Magic Chess Go Go"/></div><div className="edition">4 × 4 <span>BEST OF 3</span></div></header><section className="intro"><div className="heroart"><picture><source media="(max-width:700px)" srcSet="/assets/preview-mobile.webp"/><img className="previewhero" src="/assets/preview-hero.webp" alt="MCGG LEAGUE by WWS — турнир Magic Chess Go Go, 4 × 4, Best of 3"/></picture></div></section>
 <section className="eventinfo" aria-label="Информация о турнире">
   <div className="eventheading"><span>ИНФОРМАЦИЯ О ТУРНИРЕ</span><strong>21.11.2026</strong></div>
   <div className="eventstats">
