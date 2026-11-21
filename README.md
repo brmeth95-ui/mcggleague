@@ -22,3 +22,5 @@ For local dev (`npm run dev`), `/api/*` requires a Cloudflare Worker and D1. The
 The Worker automatically creates its two required tables in D1 on the first API request. Protect your organizer password and do not publish it in the repo.
 
 **Existing tournament data:** Linking a newly created D1 database will start with default placeholder teams. If scores were already saved on the old service, they require a separate data migration.
+
+GitHub-to-Cloudflare deployment: connected to `main`; source updates should trigger a new build.
