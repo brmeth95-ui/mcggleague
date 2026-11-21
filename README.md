@@ -5,7 +5,7 @@ Tournament website for **Magic Chess Go Go** (8 teams, 4v4, BO3). React/Vite fro
 ## Build
 
 ```bash
-npm ci
+npm install
 npm run build
 ```
 
