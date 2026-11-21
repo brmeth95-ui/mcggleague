@@ -28,8 +28,9 @@ function ArenaIcon({name}:{name:string}){
  return <svg className="arenaicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 export default function Tournament(){
-const bracketScrollRef=useRef<HTMLDivElement|null>(null);const [pickView,setPickView]=useState<{match:number;side:0|1}|null>(null);const [rosterView,setRosterView]=useState<number|null>(null);useEffect(()=>{if(tab==="bracket"&&bracketScrollRef.current)bracketScrollRef.current.scrollLeft=0;},[tab]);
-const [teams,setTeams]=useState(initialTeams);const [matches,setMatches]=useState(initialMatches);const [tab,setTab]=useState("bracket");const [editing,setEditing]=useState<number|null>(null);const [teamEdit,setTeamEdit]=useState<number|null>(null);const [loaded,setLoaded]=useState(false);const [admin,setAdmin]=useState(false);const [password,setPassword]=useState("");const [loginOpen,setLoginOpen]=useState(false);const [loginError,setLoginError]=useState("");const [saving,setSaving]=useState(false);
+const bracketScrollRef=useRef<HTMLDivElement|null>(null);const [pickView,setPickView]=useState<{match:number;side:0|1}|null>(null);const [rosterView,setRosterView]=useState<number|null>(null);const [teams,setTeams]=useState(initialTeams);const [matches,setMatches]=useState(initialMatches);const [tab,setTab]=useState("bracket");const [editing,setEditing]=useState<number|null>(null);
+useEffect(()=>{if(tab==="bracket"&&bracketScrollRef.current)bracketScrollRef.current.scrollLeft=0;},[tab]);
+const [teamEdit,setTeamEdit]=useState<number|null>(null);const [loaded,setLoaded]=useState(false);const [admin,setAdmin]=useState(false);const [password,setPassword]=useState("");const [loginOpen,setLoginOpen]=useState(false);const [loginError,setLoginError]=useState("");const [saving,setSaving]=useState(false);
 const [statsOpen,setStatsOpen]=useState(false);const [stats,setStats]=useState<Analytics|null>(null);const [statsError,setStatsError]=useState("");
 useEffect(()=>{
  let id:string;try{const saved=localStorage.getItem("mcgg-visitor-v1");id=saved&&/^[a-f0-9-]{36}$/i.test(saved)?saved:crypto.randomUUID();localStorage.setItem("mcgg-visitor-v1",id);}catch{id=crypto.randomUUID();}
