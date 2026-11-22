@@ -116,8 +116,25 @@ async function fetchSeason(season:Season):Promise<SeasonData>{
 export default {async fetch(request:Request,env:Env){try{const url=new URL(request.url);if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request as unknown as import('@cloudflare/workers-types').Request);if(url.pathname==='/api/league'&&request.method==='GET'){
  const season=url.searchParams.get('season')||'S8';
  if(!Object.prototype.hasOwnProperty.call(SEASON_GIDS,season))return json({error:'Unsupported season'},400);
- try{return json(await fetchSeason(season as Season));}
- catch(e){console.error('League source unavailable',e);return json({error:'Google Sheets temporarily unavailable',source:'Google Sheets'},503);}
+ try{
+  const live=await fetchSeason(season as Season);
+  return json({...live,mode:"live"});
+ }catch(e){
+  console.warn("League live source unavailable; using bundled season",e);
+  try{
+   const assetUrl=new URL("/data/league-"+season+".json.gz",url.origin);
+   const asset=await env.ASSETS.fetch(new Request(assetUrl.toString()) as unknown as import("@cloudflare/workers-types").Request);
+   if(!asset.ok||!asset.body)throw new Error("Missing league snapshot");
+   const stream=asset.body.pipeThrough(new DecompressionStream("gzip"));
+   const contents=await new Response(stream as ReadableStream<Uint8Array>).text();
+   const data=JSON.parse(contents) as SeasonData;
+   if(data.season!==season)throw new Error("Mismatched archive season");
+   return json({...data,mode:"snapshot"});
+  }catch(error){
+   console.error("League bundled archive unavailable",error);
+   return json({error:"League history is temporarily unavailable"},503);
+  }
+ }
 }
 if(!env.DB)return json({error:'D1 is not configured'},503);await initialize(env.DB);if(url.pathname==='/api/presence'&&request.method==='POST'){
  if(request.headers.get('origin')!==url.origin)return json({error:'Forbidden'},403);
