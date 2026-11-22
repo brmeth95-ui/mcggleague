@@ -125,7 +125,7 @@ export default {async fetch(request:Request,env:Env){try{const url=new URL(reque
    const assetUrl=new URL("/data/league-"+season+".json.gz",url.origin);
    const asset=await env.ASSETS.fetch(new Request(assetUrl.toString()) as unknown as import("@cloudflare/workers-types").Request);
    if(!asset.ok||!asset.body)throw new Error("Missing league snapshot");
-   const stream=asset.body.pipeThrough(new DecompressionStream("gzip"));
+   const stream=(asset.body as any).pipeThrough(new DecompressionStream("gzip") as any);
    const contents=await new Response(stream as ReadableStream<Uint8Array>).text();
    const data=JSON.parse(contents) as SeasonData;
    if(data.season!==season)throw new Error("Mismatched archive season");
