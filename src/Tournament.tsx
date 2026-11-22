@@ -78,7 +78,7 @@ const importTest=async(e:React.ChangeEvent<HTMLInputElement>)=>{
  setMigrationBusy(true);
  const backup={teams,matches,games:mapStatistics};
  backupLive();
- const put=async(path:string,body:unknown)=>{
+ const put=async(path:string,body:Record<string,unknown>)=>{
   const r=await fetch("/api/"+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({password,...body})});
   if(!r.ok)throw Error(path+" "+r.status+": "+(await r.text()).slice(0,180));
  };
