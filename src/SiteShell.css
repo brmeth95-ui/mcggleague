@@ -138,3 +138,61 @@ body{background:var(--wws-ivory);margin:0}
  .hubBtnMain,.hubBtnOutline{padding:12px 15px;font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.hubTile{transition:none}}
+
+
+/* REFERENCE-FIDELITY REWORK — burgundy fantasy esports landing */
+:root{--wws-deep:#2c0c12;--wws-oxblood:#4d1118;--wws-cream:#ffe8d5;--wws-orange:#fd6125;--wws-gold:#ffc176;}
+body,.hubWrap{background:#431017;color:#fbe4cd}
+.hubWrap{background:radial-gradient(ellipse at 50% 5%,#742721 0,#44151a 52%,#2d0c13 100%);color:#ffe3cb}
+.hubMain{max-width:1320px;padding:0 22px 80px}
+.hubTopline{background:#300d13}
+.hubHeader{background:linear-gradient(90deg,#370e15,#4a1018 65%,#310b12);border-bottom:1px solid #ad522d;color:#fff2dc}
+.hubLogo{color:#fff2df}.hubLogo strong{color:#fff1de}.hubLogo small{color:#ff9d51}
+.hubNav button{color:#ffe3d0}
+.hubNav button.isCurrent,.hubNav button:hover{color:#ff9d45}
+.hubNav button.isCurrent:after{background:#ff7329}
+.hubMenuButton{color:#ffe3cb}
+.hubLogin{background:linear-gradient(115deg,#ff8d37,#dc4319);color:#fff}
+.hubHero{min-height:530px;display:flex;align-items:center;isolation:isolate;overflow:hidden;background:linear-gradient(90deg,rgba(40,8,17,.96) 0%,rgba(57,12,22,.92) 25%,rgba(66,14,23,.2) 63%,rgba(37,8,14,.04) 100%),url('/assets/preview-hero.webp') center / cover no-repeat,#41121a;border:1px solid #aa552f;border-top:0;position:relative}
+.hubHero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#51151c 0%,transparent 19%,transparent 82%,#391018a8 100%);pointer-events:none}
+.hubHeroContent{max-width:570px;padding:50px 10px 75px 48px;position:relative;z-index:2}
+.hubHero .hubKicker{color:#ffca78;font-size:11px;letter-spacing:1.6px}
+.hubHeroCrown{color:#ffb144;text-shadow:0 0 15px #fa893c75;margin:17px 0 -4px 100px;font-size:35px}
+.hubHero h1{font:italic 900 clamp(65px,8.8vw,124px)/.83 Impact,'Arial Black',sans-serif;letter-spacing:-1px;color:#fff4e5;text-shadow:0 4px 17px #1b030cad;margin:0 0 28px}
+.hubHero h1 em{font-size:.62em;letter-spacing:0;color:#ff812d;text-shadow:0 3px 10px #5a120c}
+.hubHero p{color:#fff0e5;max-width:390px;font-size:16px;line-height:1.55;text-shadow:0 1px 3px #270c14}
+.hubBtnMain{background:linear-gradient(100deg,#ff8d37,#ea4b12);color:#fff6e7;border:1px solid #ffa254;box-shadow:0 6px 16px #1c040c4a}
+.hubBtnOutline{background:rgba(46,11,16,.58);color:#ffdebb;border:1px solid #df9d5c}
+.hubFeatureBar{margin:-17px 12px 0;background:linear-gradient(92deg,#410e16,#59151c 45%,#350d13);border:1px solid #eb8c4d;box-shadow:0 7px 25px #1d060d8e;border-radius:12px}
+.hubFeatureBar>div>span{color:#ffbf69}
+.hubFeatureBar>div strong{color:#ffe2bf}
+.hubFeatureBar>div small{color:#ecc0aa}
+.hubSectionIntro{padding:58px 10px 21px}
+.hubSectionIntro>span,.hubSectionIntro>div>span{color:#f5ad73}
+.hubSectionIntro h2{color:#fff1df;font:900 36px/1.07 Impact,'Arial Black',sans-serif}
+.hubSectionIntro h2 em{color:#ff813d}
+.hubSectionIntro p{color:#f2c8b0}
+.hubTiles{grid-template-columns:repeat(3,1fr)}
+.hubTile{min-height:181px;background:linear-gradient(105deg,#ffe9d1 0%,#f0bb95 54%,#bd674755 100%),url('/assets/preview-hero.webp') 83% 50% / auto 250% no-repeat;border:1px solid #eea570;border-radius:13px;box-shadow:0 5px 17px #1a050e75;color:#39171a}
+.hubTile:nth-child(2){background-image:linear-gradient(105deg,#ffedda 0%,#efc6a8 55%,#ab552f77 100%),url('/assets/league-trophy.svg')}
+.hubTile:nth-child(3),.hubTile:nth-child(4),.hubTile:nth-child(6){background-image:linear-gradient(105deg,#ffedda 0%,#f0c29b 54%,#ab552f6f 100%),url('/assets/preview-hero.webp')}
+.hubTile:nth-child(5){background-image:linear-gradient(105deg,#ffedd9 0%,#f0c6a5 54%,#ab552f77 100%),url('/assets/league-trophy.svg')}
+.hubTile:hover{border-color:#ffe1a2}
+.hubTile strong{color:#43131a}
+.hubTileGo{color:#b63f24}
+.hubTileEyebrow{color:#a4462b}
+.hubTileIcon{color:#a93422}
+.hubHighlight{background:radial-gradient(circle at 74% 42%,#aa4b2c 0%,#5b181d 43%,#350c14 100%);border:1px solid #a85a3b;min-height:335px;border-radius:12px}
+.hubHighlight:before{background:url('/assets/preview-hero.webp') right center / auto 130% no-repeat;opacity:.3}
+.hubHighlight h2{color:#ffe6c8;font-size:50px;font-style:italic}
+.hubHighlight h2 em{color:#ff8d38}
+.hubHighlight .hubKicker{color:#ffbc72}
+.hubHighlight p{color:#f3cbb2}
+.hubHighlightArt img{width:265px}
+.hubHomeBottom button{background:linear-gradient(120deg,#f8e1ce,#e9b996);border-color:#e8aa79}
+.hubHomeBottom button:nth-child(2){background:linear-gradient(120deg,#ffe8d5,#dfa780)}
+.hubCTA{background:linear-gradient(100deg,#40101a,#681d23 60%,#b34022)}
+.hubFooter{background:#2b0b12}
+.hubPageHeading{background:linear-gradient(90deg,#3f1118,#7425238c),url('/assets/preview-hero.webp') center / cover no-repeat}
+@media(max-width:1080px){.hubHero h1{font-size:90px}}
+@media(max-width:760px){.hubHeader{background:#380f17}.hubNav{background:#53171c;border-color:#bd6c45}.hubNav button{color:#ffe6d1}.hubHero{min-height:480px;background:linear-gradient(90deg,#2c0b16ed,#3a0f1ba6 52%,#44101b2b),url('/assets/preview-mobile.webp') 58% center / cover no-repeat}.hubHeroContent{padding:35px 17px 78px}.hubHero h1{font-size:clamp(61px,13vw,87px)}.hubHero p{font-size:13px;max-width:285px}.hubFeatureBar{margin:-9px 6px 0}.hubTiles{grid-template-columns:1fr}.hubSectionIntro h2{font-size:31px}.hubHighlight h2{font-size:36px}}
