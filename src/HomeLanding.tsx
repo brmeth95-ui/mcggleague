@@ -62,7 +62,7 @@ export default function HomeLanding({go}:{go:(v:Page)=>void}){
     <div className="hlHeroActions"><button className="hlPrimary" onClick={()=>go("tournaments")}>К турнирам <b>→</b></button><button className="hlGhost" onClick={()=>go("ranking")}>Рейтинг сезона <b>↗</b></button></div>
    </div>
   </section>
-  <nav className="hlQuick" aria-label="Разделы платформы">{menu.map(item=><button key={item.id} onClick={()=>go(item.id)} className="hlQuickItem"><span className="hlIconWrap"><Icon name={item.icon}/></span><strong>{item.label}</strong><small>{item.caption}</small></button>)}</nav>
+  <nav className="hlQuick" aria-label="Разделы платформы">{menu.map(item=><button key={item.id} onClick={()=>go(item.id)} className="hlQuickItem"><span className="hlIconWrap"><img src={asset+"icon-"+(item.icon==="calendar"?"schedule":item.icon==="organizer"?"organizers":item.icon)+".webp"} alt="" loading="lazy"/></span><strong>{item.label}</strong><small>{item.caption}</small></button>)}</nav>
   <section className="hlSeason">
    <div className="hlSeasonInfo"><span className="hlEyebrow">MCGG LEAGUE BY WWS</span><h2>MCGG LEAGUE<br/><em>СЕЗОН 8</em></h2><p>Архив результатов и соревнования лиги. Побеждай, набирай очки и поднимайся в рейтинге.</p><button onClick={()=>go("ranking")}>Подробнее о сезоне <b>→</b></button></div>
    <div className="hlSeasonArt" aria-hidden="true"/>

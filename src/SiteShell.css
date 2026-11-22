@@ -228,3 +228,6 @@ body,.hubWrap{background:#431017;color:#fbe4cd}
 .hubModalSwitch{background:none;border:none;margin-top:12px;color:#832b27;cursor:pointer;font-size:12px}
 @media(max-width:1060px){.hubNav{gap:0}.hubNav button{font-size:11px;padding:8px 5px}.hubLogo{min-width:167px}.hubAuthButtons{gap:4px}.hubSignIn,.hubRegister{padding:8px 11px}}
 @media(max-width:760px){.hubHeader{position:sticky;top:0;min-height:58px;padding:8px 12px;flex-wrap:wrap}.hubLogo{min-width:auto;flex:1}.hubLogo strong{font-size:16px}.hubLogo small{font-size:10px}.hubMenuButton{order:3;font-size:12px;padding:8px 4px;display:block;color:#ffe7c7}.hubAuthButtons{order:2}.hubSignIn,.hubRegister{font-size:10px;padding:8px}.hubNav{order:4;width:100%;display:none;flex-direction:column;background:#4b131d;padding:8px}.hubNavOpen{display:flex}.hubNav button{font-size:13px;padding:12px}}
+
+.hubWordmark{width:139px;height:44px;object-fit:contain;object-position:left center;display:block;filter:drop-shadow(0 2px 3px #14050b80)}
+@media(max-width:760px){.hubWordmark{width:95px;height:38px}.hubMark{width:34px;height:36px}.hubMark::before{transform:translate(10px,12px)}}

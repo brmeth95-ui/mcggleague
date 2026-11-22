@@ -24,7 +24,7 @@ export default function SiteShell(){
  const go=(id:Page)=>{setPage(id);setMobileMenu(false);const hash="#/"+id;if(location.hash!==hash)history.pushState(null,"",hash);window.scrollTo({top:0,behavior:"instant"})};
  const tile=(id:Page,eyebrow:string,title:string,subtitle:string,icon:string,kind="")=><button type="button" className={"hubTile "+kind} onClick={()=>go(id)} key={id}><span className="hubTileIcon">{icon}</span><span className="hubTileEyebrow">{eyebrow}</span><strong>{title}</strong><span>{subtitle}</span><span className="hubTileGo">Открыть <span aria-hidden="true">↗</span></span></button>;
  return <div className="hubWrap">
- <header className="hubHeader"><button className="hubLogo" onClick={()=>go("home")} aria-label="MCGG LEAGUE — главная"><span className="hubMark">M</span><span><strong>MCGG LEAGUE</strong><small>by WWS</small></span></button>
+ <header className="hubHeader"><button className="hubLogo" onClick={()=>go("home")} aria-label="MCGG LEAGUE — главная"><span className="hubMark">M</span><img className="hubWordmark" src="/assets/league-wordmark.webp" alt="MCGG LEAGUE by WWS"/></button>
  <button className="hubMenuButton" aria-expanded={mobileMenu} aria-label="Открыть меню" onClick={()=>setMobileMenu(!mobileMenu)}>☰ <span>Меню</span></button>
  <nav className={"hubNav "+(mobileMenu?"hubNavOpen":"")} aria-label="Основная навигация">{navigation.map(n=><button key={n.id} onClick={()=>go(n.id)} className={page===n.id?"isCurrent":""}>{n.title}</button>)}</nav>
  <div className="hubAuthButtons"><button className="hubSignIn" onClick={()=>setAuthModal("login")}>Вход</button><button className="hubRegister" onClick={()=>setAuthModal("register")}>Регистрация</button></div>
