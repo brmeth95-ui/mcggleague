@@ -1,9 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import Stats, {type Game as PreviewGame} from "./Stats";
-import { getTournament, verifyAdmin, saveTournament, sendPresence, getAnalytics, type Analytics } from "./api";
+import { getTournament, sendPresence, type Analytics } from "./api";
 
 type Team={name:string;players:string[];reserves:string[]};
 type Match={a:number|null;b:number|null;sa:number;sb:number;picks:string[];pickPlayers:string[]};
+// Local test editor only; intentionally not an authorization token for the live API.
+const TEST_CODE="TEST-2026";
+const TEST_STORAGE="mcgg-preview-organizer-v1";
+function readTestState():{teams:Team[];matches:Match[]}|null{
+ try{
+  const value=JSON.parse(localStorage.getItem(TEST_STORAGE)||"null");
+  if(!value||!Array.isArray(value.teams)||value.teams.length!==8||!Array.isArray(value.matches)||value.matches.length!==8)return null;
+  if(!value.teams.every((t:Team)=>typeof t.name==="string"&&Array.isArray(t.players)&&t.players.length===4&&t.players.every(p=>typeof p==="string")&&Array.isArray(t.reserves)&&t.reserves.length===2&&t.reserves.every(p=>typeof p==="string")))return null;
+  if(!value.matches.every((m:Match)=>[m.a,m.b].every(v=>v===null||Number.isInteger(v)&&v>=0&&v<8)&&[m.sa,m.sb].every(v=>Number.isInteger(v)&&v>=0&&v<=2)&&Array.isArray(m.picks)&&m.picks.length===24&&m.picks.every(v=>typeof v==="string")&&Array.isArray(m.pickPlayers)&&m.pickPlayers.length===24&&m.pickPlayers.every(v=>typeof v==="string")))return null;
+  return value;
+ }catch{return null;}
+}
 const initialTeams:Team[]=Array.from({length:8},(_,i)=>({name:"Команда "+(i+1),players:Array.from({length:4},(_,j)=>"Игрок "+(j+1)),reserves:["",""]}));
 const empty=(a:number|null=null,b:number|null=null):Match=>({a,b,sa:0,sb:0,picks:Array(24).fill(""),pickPlayers:Array(24).fill("")});
 const initialMatches:Match[]=[empty(0,1),empty(2,3),empty(4,5),empty(6,7),empty(),empty(),empty(),empty()];
@@ -38,20 +50,50 @@ useEffect(()=>{
  read();window.addEventListener("storage",read);return()=>window.removeEventListener("storage",read);
 },[]);
 const [statsOpen,setStatsOpen]=useState(false);const [stats,setStats]=useState<Analytics|null>(null);const [statsError,setStatsError]=useState("");
+const [testSaved,setTestSaved]=useState(false);const [testWarning,setTestWarning]=useState("");
 useEffect(()=>{
  let id:string;try{const saved=localStorage.getItem("mcgg-visitor-v1");id=saved&&/^[a-f0-9-]{36}$/i.test(saved)?saved:crypto.randomUUID();localStorage.setItem("mcgg-visitor-v1",id);}catch{id=crypto.randomUUID();}
  let last=0;const ping=()=>{if(document.visibilityState!=="visible"||Date.now()-last<20000)return;last=Date.now();void sendPresence(id).catch(()=>{});};
  ping();const timer=window.setInterval(ping,30000);document.addEventListener("visibilitychange",ping);
  return()=>{window.clearInterval(timer);document.removeEventListener("visibilitychange",ping);};
 },[]);
+// No production analytics, password verification or writes in the test build.
+useEffect(()=>{if(!statsOpen){setStats(null);setStatsError("");}},[statsOpen]);
 useEffect(()=>{
- if(!admin||!statsOpen){setStats(null);setStatsError("");return;}
- let active=true;const refresh=()=>{void getAnalytics(password).then(v=>{if(active){setStats(v);setStatsError("");}}).catch(()=>{if(active)setStatsError("Не удалось загрузить статистику. Повторяем запрос…");});};
- refresh();const timer=window.setInterval(refresh,15000);return()=>{active=false;window.clearInterval(timer);};
-},[admin,statsOpen,password]);
-useEffect(()=>{getTournament().then(d=>{setTeams(d.teams.map(t=>({...t,reserves:Array.isArray(t.reserves)?[...t.reserves.slice(0,2),...Array(Math.max(0,2-t.reserves.length)).fill("")]:["",""]})));setMatches(recalc(d.matches.map(m=>({...m,pickPlayers:Array.isArray(m.pickPlayers)?[...m.pickPlayers.slice(0,24),...Array(Math.max(0,24-m.pickPlayers.length)).fill("")]:Array(24).fill("")}))));setLoaded(true)}).catch(()=>setLoaded(true))},[]);
-const persist=async(nextTeams:Team[],nextMatches:Match[])=>{if(!admin)return;setSaving(true);try{await saveTournament({password,teams:nextTeams,matches:nextMatches})}catch(e){alert("Не удалось сохранить: "+String(e))}finally{setSaving(false)}};
-const login=async()=>{try{const ok=await verifyAdmin({password});if(ok){setAdmin(true);setLoginOpen(false);setLoginError("")}else setLoginError("Неверный пароль")}catch{setLoginError("Не удалось войти")}};
+ getTournament().then(d=>{
+  const fromLive={teams:d.teams.map(t=>({...t,reserves:Array.isArray(t.reserves)?[...t.reserves.slice(0,2),...Array(Math.max(0,2-t.reserves.length)).fill("")]:["",""]})),matches:recalc(d.matches.map(m=>({...m,pickPlayers:Array.isArray(m.pickPlayers)?[...m.pickPlayers.slice(0,24),...Array(Math.max(0,24-m.pickPlayers.length)).fill("")]:Array(24).fill("")})))};
+  const local=readTestState();
+  setTeams(local?local.teams:fromLive.teams);
+  setMatches(local?recalc(local.matches):fromLive.matches);
+  setTestSaved(!!local);setLoaded(true);
+ }).catch(()=>{
+  const local=readTestState();
+  if(local){setTeams(local.teams);setMatches(recalc(local.matches));setTestSaved(true);}
+  setLoaded(true);
+ });
+},[]);
+const persist=async(nextTeams:Team[],nextMatches:Match[])=>{
+ if(!admin)return;
+ setSaving(true);
+ try{
+  localStorage.setItem(TEST_STORAGE,JSON.stringify({teams:nextTeams,matches:recalc(nextMatches)}));
+  setTestSaved(true);setTestWarning("");
+ }catch{setTestWarning("Не удалось сохранить тестовые изменения в этом браузере.");}
+ finally{setSaving(false);}
+};
+const login=()=>{
+ if(password===TEST_CODE){setAdmin(true);setLoginOpen(false);setLoginError("");setPassword("");}
+ else setLoginError("Неверный тестовый код.");
+};
+const resetTest=async()=>{
+ if(!window.confirm("Удалить локальные изменения составов и сетки? Статистика скриншотов сохранится отдельно."))return;
+ try{localStorage.removeItem(TEST_STORAGE)}catch{}
+ setTestSaved(false);setAdmin(false);setStatsOpen(false);
+ setLoginOpen(false);setEditing(null);setTeamEdit(null);setPickView(null);
+ const fresh=await getTournament().catch(()=>null);
+ if(fresh){setTeams(fresh.teams.map(t=>({...t,reserves:Array.isArray(t.reserves)?[...t.reserves.slice(0,2),...Array(Math.max(0,2-t.reserves.length)).fill("")]:["",""]})));setMatches(recalc(fresh.matches.map(m=>({...m,pickPlayers:Array.isArray(m.pickPlayers)?[...m.pickPlayers.slice(0,24),...Array(Math.max(0,24-m.pickPlayers.length)).fill("")]:Array(24).fill("")}))));setTestWarning("");}
+ else setTestWarning("Локальные данные удалены. Обнови страницу для восстановления данных турнира.");
+};
 const changeMatch=(i:number,patch:Partial<Match>)=>setMatches(old=>recalc(old.map((m,j)=>i===j?{...m,...patch}:m)));
 const label=(id:number|null)=>id===null?"Ожидается":teams[id]?.name||"Команда";
 const pickerName=(match:Match,index:number,tid:number|null,player:number)=>{
@@ -80,7 +122,7 @@ const card=(i:number)=><div className="match" key={i}>
     </div>;
   })}
 </div>;
-return <main><div className="previewbanner">MCGG LEAGUE 2.0 · ТЕСТОВАЯ ВЕРСИЯ · Данные только для просмотра</div><header><div className="brand"><img className="officialmagic" src="/assets/official-orange-trim.webp" alt="Magic Chess Go Go"/></div><div className="edition">4 × 4 <span>BEST OF 3</span></div></header><section className="intro"><div className="heroart"><picture><source media="(max-width:700px)" srcSet="/assets/preview-mobile.webp"/><img className="previewhero" src="/assets/preview-hero.webp" alt="MCGG LEAGUE by WWS — турнир Magic Chess Go Go, 4 × 4, Best of 3"/></picture></div></section>
+return <main><div className="previewbanner">MCGG LEAGUE 2.0 · ТЕСТОВАЯ ВЕРСИЯ · Локальное редактирование без изменения основного сайта</div><header><div className="brand"><img className="officialmagic" src="/assets/official-orange-trim.webp" alt="Magic Chess Go Go"/></div><div className="edition">4 × 4 <span>BEST OF 3</span></div></header><section className="intro"><div className="heroart"><picture><source media="(max-width:700px)" srcSet="/assets/preview-mobile.webp"/><img className="previewhero" src="/assets/preview-hero.webp" alt="MCGG LEAGUE by WWS — турнир Magic Chess Go Go, 4 × 4, Best of 3"/></picture></div></section>
 <section className="eventinfo" aria-label="Информация о турнире">
   <div className="eventheading"><span>ИНФОРМАЦИЯ О ТУРНИРЕ</span><strong>21.11.2026</strong></div>
   <div className="eventstats">
@@ -105,14 +147,7 @@ return <main><div className="previewbanner">MCGG LEAGUE 2.0 · ТЕСТОВАЯ 
       <article className="rulewide"><span>06</span><div><h3>СКРИНШОТЫ</h3><p>После каждой игры обязательно отправляем скриншот результата.</p></div></article>
     </div>
   </details>
-</section><nav><button className={tab==="bracket"?"active":""} onClick={()=>setTab("bracket")}><ArenaIcon name="bracket"/>Турнирная сетка</button><button className={tab==="teams"?"active":""} onClick={()=>setTab("teams")}><ArenaIcon name="users"/>Команды и составы</button><button className={tab==="ranking"?"active":""} onClick={()=>setTab("ranking")}><ArenaIcon name="trophy"/>Рейтинг команд</button><button className={tab==="rules"?"active":""} onClick={()=>setTab("rules")}><ArenaIcon name="book"/>Правила</button><button className={tab==="statistics"?"active":""} onClick={()=>setTab("statistics")}><ArenaIcon name="trophy"/>Статистика</button></nav>{tab==="bracket"?<><div className="previewlayout"><section className="previewboard"><div className="boardtitle"><div><span>TOURNAMENT / 01</span><h1><ArenaIcon name="bracket"/>Турнирная сетка</h1></div><div className="boardtag">8 команд · BO3</div></div><div className="bracketscroll" ref={bracketScrollRef} tabIndex={0} aria-label="Турнирная сетка. Прокрутите горизонтально, чтобы увидеть полуфинал и финал"><div className="bracket"><div className="round"><h2>01 / ЧЕТВЕРТЬФИНАЛ</h2>{[0,1,2,3].map(card)}</div><div className="round semifinals"><h2>02 / ПОЛУФИНАЛ</h2>{[4,5].map(card)}</div><div className="round finals"><h2>03 / ФИНАЛ</h2>{card(6)}<h2>МАТЧ ЗА БРОНЗУ</h2>{card(7)}</div></div></div><p className="swipehint">← Прокрутите сетку, чтобы увидеть следующие этапы →</p></section></div></>:tab==="rules"?<div className="rulesview"><p>Правила турнира открыты в разделе выше.</p></div>:tab==="statistics"?<Stats teams={teams} matches={matches} onSaved={setMapStatistics}/>:tab==="ranking"?<section className="ranking"><div className="rankinghead"><h2>РЕЙТИНГ КОМАНД</h2><p>Автоматический подсчёт: 1 выигранная карта = 1 очко. При равенстве — победы в BO3, затем меньше проигранных карт.</p></div><div className="rankingtable"><div className="rankingrow rankinglabels"><span>МЕСТО</span><span>КОМАНДА</span><span>ПОБЕДЫ BO3</span><span>КАРТЫ</span><strong>ОЧКИ</strong></div>{standings.map((r,i)=><div className={"rankingrow "+(i<3?"ranktop rank"+i:"")} key={r.id}><span className="ranknumber">#{i+1}</span><div className="rankteam"><strong className="rankname"><TeamPlaque name={r.name}/></strong><button className="mini-action" onClick={()=>setRosterView(r.id)} aria-label={"Состав "+r.name}><ArenaIcon name="users"/>Состав</button></div><span>{r.wins}</span><span>{r.maps}–{r.lost}</span><strong className="rankpts">{r.pts} PTS</strong></div>)}</div></section>:<div className="teams">{teams.map((t,i)=><article className="team" key={i}><div className="teamtop"><span>КОМАНДА {String(i+1).padStart(2,"0")}</span>{admin&&<button onClick={()=>setTeamEdit(i)}>Редактировать</button>}</div><h3 className="teamplaqueheading"><TeamPlaque name={t.name}/></h3>{t.players.map((p,j)=><div className="player" key={j}><span>{String(j+1).padStart(2,"0")}</span>{p}</div>)}<div className="reservehead">РЕЗЕРВ · 2 ИГРОКА</div>{t.reserves.map((p,j)=><div className="player reserveplayer" key={"r"+j}><span>R{j+1}</span>{p||"Не указан"}</div>)}</article>)}</div>}<footer>MCGG LEAGUE BY WWS · 4×4 · BO3 <button className="admin-link" onClick={()=>admin?(setStatsOpen(false),setAdmin(false),setPassword("")):setLoginOpen(true)}>{admin?"Выйти из редактора":"Вход организатора"}</button>{admin&&<button className="admin-link" onClick={()=>setStatsOpen(true)}>Статистика сайта</button>}{saving&&" · Сохранение…"}</footer>
-{admin&&statsOpen&&<div className="overlay" onClick={()=>setStatsOpen(false)}><section className="dialog detaildialog analyticsdialog" role="dialog" aria-modal="true" aria-label="Статистика сайта" onClick={e=>e.stopPropagation()}>
-<div className="dialoghead"><h3>СТАТИСТИКА САЙТА</h3><button aria-label="Закрыть статистику" onClick={()=>setStatsOpen(false)}>✕</button></div>
-<p className="analyticsintro">Доступно только организатору · обновление каждые 15 секунд</p>
-<div className="analyticsgrid">{[{label:"Сейчас онлайн",value:stats?.online,live:true},{label:"Сегодня · МСК",value:stats?.today},{label:"Всего посетителей",value:stats?.total},{label:"Пиковый онлайн",value:stats?.peak}].map(item=><div className={"analyticstat "+(item.live?"analyticslive":"")} key={item.label}><span>{item.live&&<i className="livedot"/>}{item.label}</span><strong>{item.value===undefined?"—":item.value.toLocaleString("ru-RU")}</strong></div>)}</div>
-{statsError&&<p role="alert">{statsError}</p>}
-<p className="analyticsintro">Онлайн — активные браузеры за последние 60 секунд. Посетители — уникальные браузеры, а не точное число людей. Данные собираются с момента подключения счётчика.</p>
-</section></div>}
+</section><nav><button className={tab==="bracket"?"active":""} onClick={()=>setTab("bracket")}><ArenaIcon name="bracket"/>Турнирная сетка</button><button className={tab==="teams"?"active":""} onClick={()=>setTab("teams")}><ArenaIcon name="users"/>Команды и составы</button><button className={tab==="ranking"?"active":""} onClick={()=>setTab("ranking")}><ArenaIcon name="trophy"/>Рейтинг команд</button><button className={tab==="rules"?"active":""} onClick={()=>setTab("rules")}><ArenaIcon name="book"/>Правила</button><button className={tab==="statistics"?"active":""} onClick={()=>setTab("statistics")}><ArenaIcon name="trophy"/>Статистика</button></nav>{tab==="bracket"?<><div className="previewlayout"><section className="previewboard"><div className="boardtitle"><div><span>TOURNAMENT / 01</span><h1><ArenaIcon name="bracket"/>Турнирная сетка</h1></div><div className="boardtag">8 команд · BO3</div></div><div className="bracketscroll" ref={bracketScrollRef} tabIndex={0} aria-label="Турнирная сетка. Прокрутите горизонтально, чтобы увидеть полуфинал и финал"><div className="bracket"><div className="round"><h2>01 / ЧЕТВЕРТЬФИНАЛ</h2>{[0,1,2,3].map(card)}</div><div className="round semifinals"><h2>02 / ПОЛУФИНАЛ</h2>{[4,5].map(card)}</div><div className="round finals"><h2>03 / ФИНАЛ</h2>{card(6)}<h2>МАТЧ ЗА БРОНЗУ</h2>{card(7)}</div></div></div><p className="swipehint">← Прокрутите сетку, чтобы увидеть следующие этапы →</p></section></div></>:tab==="rules"?<div className="rulesview"><p>Правила турнира открыты в разделе выше.</p></div>:tab==="statistics"?<Stats teams={teams} matches={matches} onSaved={setMapStatistics}/>:tab==="ranking"?<section className="ranking"><div className="rankinghead"><h2>РЕЙТИНГ КОМАНД</h2><p>Автоматический подсчёт: 1 выигранная карта = 1 очко. При равенстве — победы в BO3, затем меньше проигранных карт.</p></div><div className="rankingtable"><div className="rankingrow rankinglabels"><span>МЕСТО</span><span>КОМАНДА</span><span>ПОБЕДЫ BO3</span><span>КАРТЫ</span><strong>ОЧКИ</strong></div>{standings.map((r,i)=><div className={"rankingrow "+(i<3?"ranktop rank"+i:"")} key={r.id}><span className="ranknumber">#{i+1}</span><div className="rankteam"><strong className="rankname"><TeamPlaque name={r.name}/></strong><button className="mini-action" onClick={()=>setRosterView(r.id)} aria-label={"Состав "+r.name}><ArenaIcon name="users"/>Состав</button></div><span>{r.wins}</span><span>{r.maps}–{r.lost}</span><strong className="rankpts">{r.pts} PTS</strong></div>)}</div></section>:<div className="teams">{teams.map((t,i)=><article className="team" key={i}><div className="teamtop"><span>КОМАНДА {String(i+1).padStart(2,"0")}</span>{admin&&<button onClick={()=>setTeamEdit(i)}>Редактировать</button>}</div><h3 className="teamplaqueheading"><TeamPlaque name={t.name}/></h3>{t.players.map((p,j)=><div className="player" key={j}><span>{String(j+1).padStart(2,"0")}</span>{p}</div>)}<div className="reservehead">РЕЗЕРВ · 2 ИГРОКА</div>{t.reserves.map((p,j)=><div className="player reserveplayer" key={"r"+j}><span>R{j+1}</span>{p||"Не указан"}</div>)}</article>)}</div>}<footer>MCGG LEAGUE BY WWS · 4×4 · BO3 <button className="admin-link" onClick={()=>admin?(setAdmin(false),setLoginOpen(false)):setLoginOpen(true)}>{admin?"Выйти из тестового редактора":"Вход организатора (тест)"}</button>{admin&&<button className="admin-link" onClick={()=>void resetTest()}>Сбросить тестовые изменения</button>}{saving&&" · Сохранение…"}{testSaved&&<span className="test-saved"> · Локальные правки</span>}{testWarning&&<span role="alert" className="test-warning"> · {testWarning}</span>}</footer>
 {rosterView!==null&&<div className="overlay" onClick={()=>setRosterView(null)}><section className="dialog detaildialog" role="dialog" aria-modal="true" aria-label={"Состав "+label(rosterView)} onClick={e=>e.stopPropagation()}>
   <div className="dialoghead"><h3>СОСТАВ · {label(rosterView)}</h3><button aria-label="Закрыть состав" onClick={()=>setRosterView(null)}>✕</button></div>
   <h4 className="detailsectiontitle">ОСНОВНОЙ СОСТАВ</h4>
@@ -138,7 +173,7 @@ return <main><div className="previewbanner">MCGG LEAGUE 2.0 · ТЕСТОВАЯ 
 </section></div>}
 {editing!==null&&<div className="overlay" onClick={()=>setEditing(null)}><section className="dialog" onClick={e=>e.stopPropagation()}><div className="dialoghead"><h3>Результат матча {editing+1}</h3><button onClick={()=>setEditing(null)}>✕</button></div><p>{label(matches[editing].a)} <b>VS</b> {label(matches[editing].b)}</p><div className="scorefields">{(["sa","sb"] as const).map((k,j)=><label key={k}>{j===0?label(matches[editing].a):label(matches[editing].b)}<select value={matches[editing][k]} onChange={e=>{const v=Number(e.target.value);const other=j===0?matches[editing].sb:matches[editing].sa;changeMatch(editing,{[k]:v,...(v===2&&other===2?{[j===0?"sb":"sa"]:1}:{})})}}>{[0,1,2].map(v=><option key={v} value={v}>{v}</option>)}</select></label>)}</div><h4>Пики командиров · 3 игры</h4><p className="pickerhelper">Для каждой игры укажи, кто именно выбрал командира. Можно выбрать основного или резервного игрока.</p>{[0,1,2].map(n=><div className="gamepicks" key={n}><div className="gametitle">ИГРА {n+1}</div><div className="pickcolumns">{[0,1].map(side=><div key={side}><h5>{label(side===0?matches[editing].a:matches[editing].b)}</h5>{[0,1,2,3].map(player=>{const idx=n*8+side*4+player;const tid=side===0?matches[editing].a:matches[editing].b;return <label key={idx}>Игрок {player+1}<select aria-label={"Кто выбирал командира в игре "+(n+1)} value={matches[editing].pickPlayers?.[idx]||""} onChange={e=>{const pickPlayers=[...(matches[editing].pickPlayers||Array(24).fill(""))];pickPlayers[idx]=e.target.value;changeMatch(editing,{pickPlayers})}}><option value="">{tid===null?"Игрок "+(player+1):teams[tid].players[player]} · основной</option>{tid!==null&&[...teams[tid].players.map((name,j)=>({name,label:"Основной "+(j+1)})),...teams[tid].reserves.map((name,j)=>({name,label:"Резерв "+(j+1)}))].filter(({name})=>name.trim()).map(({name,label},j)=><option key={j} value={name}>{name} · {label}</option>)}</select><input placeholder="Пик командира" value={matches[editing].picks[idx]||""} onChange={e=>{const picks=[...matches[editing].picks];picks[idx]=e.target.value;changeMatch(editing,{picks})}}/></label>})}</div>)}</div></div>)}<button className="save" onClick={()=>{void persist(teams,matches);setEditing(null)}}>Сохранить результат</button></section></div>}
 {teamEdit!==null&&<div className="overlay" onClick={()=>setTeamEdit(null)}><section className="dialog" onClick={e=>e.stopPropagation()}><div className="dialoghead"><h3>Редактировать команду</h3><button onClick={()=>setTeamEdit(null)}>✕</button></div><label>Название команды<input value={teams[teamEdit].name} onChange={e=>setTeams(old=>old.map((t,i)=>i===teamEdit?{...t,name:e.target.value}:t))}/></label><h4>Состав из 4 игроков</h4>{teams[teamEdit].players.map((p,j)=><label key={j}>Игрок {j+1}<input value={p} onChange={e=>setTeams(old=>old.map((t,i)=>i===teamEdit?{...t,players:t.players.map((v,k)=>k===j?e.target.value:v)}:t))}/></label>)}<h4>Резервные игроки (2)</h4>{teams[teamEdit].reserves.map((p,j)=><label key={"reserve"+j}>Резерв {j+1}<input value={p} placeholder="Ник резервного игрока" onChange={e=>setTeams(old=>old.map((t,i)=>i===teamEdit?{...t,reserves:t.reserves.map((v,k)=>k===j?e.target.value:v)}:t))}/></label>)}<button className="save" onClick={()=>{void persist(teams,matches);setTeamEdit(null)}}>Сохранить команду</button></section></div>}
-{loginOpen&&<div className="overlay" onClick={()=>setLoginOpen(false)}><section className="dialog" onClick={e=>e.stopPropagation()}><div className="dialoghead"><h3>Вход организатора</h3><button onClick={()=>setLoginOpen(false)}>✕</button></div><label>Пароль администратора<input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")void login()}} /></label>{loginError&&<p role="alert">{loginError}</p>}<button className="save" onClick={()=>void login()}>Войти</button></section></div>}
+{loginOpen&&<div className="overlay" onClick={()=>setLoginOpen(false)}><section className="dialog" onClick={e=>e.stopPropagation()}><div className="dialoghead"><h3>Вход организатора</h3><button onClick={()=>setLoginOpen(false)}>✕</button></div><p className="test-login-note">Тестовый доступ: изменения сохраняются только в твоём браузере и никогда не отправляются на основной сайт. Это демонстрационный код, не защита данных.</p><label>Тестовый код организатора<input type="password" autoComplete="off" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")login()}} /></label>{loginError&&<p role="alert">{loginError}</p>}<button className="save" onClick={()=>login()}>Войти в тестовый режим</button></section></div>}
 <style>{`
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#702b1b;font-family:Arial,system-ui,sans-serif;background:#ffdb9d;background-image:radial-gradient(ellipse at 100% 0,#fff5ce 0,transparent 55%),radial-gradient(ellipse at 0 55%,#ffab60 0,transparent 55%)}button,input,select{font:inherit}button{cursor:pointer}main{max-width:1350px;margin:auto;padding:0 22px}
 header{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:2px solid #f0a63e}.officialmagic{width:165px;max-width:48vw;filter:drop-shadow(0 3px 3px #9b4b2a44)}.edition{font:900 22px Impact,'Arial Black',sans-serif;letter-spacing:2px;color:#a53d23}.edition span{display:block;font-size:12px;letter-spacing:3px}
@@ -268,4 +303,7 @@ nav{grid-template-columns:repeat(5,minmax(0,1fr))}@media(max-width:700px){nav{gr
 .pickdetails .pickvalue{max-width:100%;text-align:right;font-size:12px;overflow-wrap:anywhere}
 .pickdetails small{font-size:10px;color:#9a4d27}
 .pickstatlabel{font-size:10px;opacity:.85}
+
+.test-login-note{font-size:12px;color:#995c3a;line-height:1.6;margin:12px 0}
+.test-saved{color:#deb978}.test-warning{color:#ffbf9e}
 `}</style></main>}
