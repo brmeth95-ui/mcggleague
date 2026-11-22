@@ -265,4 +265,4 @@ main nav button{font-size:12px}main .round h2{font-size:11px}main .mini-action{f
 }
 nav{grid-template-columns:repeat(5,minmax(0,1fr))}@media(max-width:700px){nav{grid-template-columns:repeat(2,minmax(0,1fr))}nav button:last-child{grid-column:1/-1}}
 .pickdetails{display:flex;flex-direction:column;gap:4px;align-items:flex-end;min-width:0;max-width:48%;text-align:right}.pickdetails .pickvalue{max-width:100%;text-align:right;font-size:12px;overflow-wrap:anywhere}.pickdetails small{font-size:10px;color:#9a4d27}.pickstatlabel{font-size:10px;opacity:.85}
-`}</style></main>
+`}</style></main>}
