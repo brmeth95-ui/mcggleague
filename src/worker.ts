@@ -36,7 +36,90 @@ async function readAnalytics(db:D1Database){
 }
 async function digest(password:string){const bytes=new TextEncoder().encode(password);const hash=await crypto.subtle.digest('SHA-256',bytes);return Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('')}
 async function authed(db:D1Database,password:string){const row=await db.prepare('SELECT password_hash FROM tournament_admin WHERE id=1').first<{password_hash:string}>();return !!row&&await digest(password)===row.password_hash}
-export default {async fetch(request:Request,env:Env){try{const url=new URL(request.url);if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request as unknown as import('@cloudflare/workers-types').Request);if(!env.DB)return json({error:'D1 is not configured'},503);await initialize(env.DB);if(url.pathname==='/api/presence'&&request.method==='POST'){
+
+type Season="S8"|"S7"|"S6";
+const SOURCE_SHEET="1-wjsXxAEC9jLhJvyqNh-sw95GKrIx9dc-QAW0RU33GQ";
+const SEASON_GIDS:Record<Season,{ranking:number;history:number|null}>={S8:{ranking:1,history:2},S7:{ranking:3,history:4},S6:{ranking:5,history:null}};
+type SeasonData={season:Season;players:any[];clans:any[];history:any[];headings:{games:string;clanGames:string};fetchedAt:string;source:string};
+const publicCache=new Map<Season,{value:SeasonData;expires:number}>();
+function csvCells(input:string):string[][]{
+ const rows:string[][]=[];let row:string[]=[],field="",quoted=false;
+ for(let i=0;i<input.length;i++){
+  const c=input[i];
+  if(c==='"'){if(quoted&&input[i+1]==='"'){field+='"';i++;}else quoted=!quoted;}
+  else if(c===','&&!quoted){row.push(field);field="";}
+  else if((c==='\n'||c==='\r')&&!quoted){
+   if(c==='\r'&&input[i+1]==='\n')i++;
+   row.push(field);field="";if(row.some(v=>v.trim()))rows.push(row);
+   row=[];
+  }else field+=c;
+ }
+ row.push(field);if(row.some(v=>v.trim()))rows.push(row);
+ if(rows.length)rows[0][0]=rows[0][0].replace(/^\uFEFF/,"");
+ return rows;
+}
+function numericValue(value:unknown):number{
+ const n=Number(String(value??"").trim().replace(",",".").replace("%",""));
+ return Number.isFinite(n)?n:0;
+}
+function percentage(value:unknown):number{
+ const text=String(value??"").trim();
+ if(!text)return 0;
+ const val=numericValue(text);
+ return text.includes("%")?val/100:val;
+}
+function excelDate(value:unknown):string{
+ const text=String(value??"").trim();
+ if(!text)return "";
+ const n=Number(text.replace(",","."));
+ if(Number.isFinite(n)&&n>35000&&n<80000)return new Date(Date.UTC(1899,11,30)+Math.floor(n)*86400000).toISOString().slice(0,10);
+ const match=text.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})$/);
+ if(match)return match[3]+"-"+match[2].padStart(2,"0")+"-"+match[1].padStart(2,"0");
+ return text;
+}
+async function sheetRows(gid:number):Promise<string[][]>{
+ const url="https://docs.google.com/spreadsheets/d/"+SOURCE_SHEET+"/export?format=csv&gid="+gid;
+ const r=await fetch(url,{headers:{accept:"text/csv"}});
+ if(!r.ok)throw new Error("Google Sheets export failed: "+r.status);
+ const text=await r.text();
+ if(!text||text.length>4_000_000||text.startsWith("<!DOCTYPE")||text.startsWith("<html"))throw new Error("Invalid Google Sheets CSV");
+ return csvCells(text);
+}
+async function fetchSeason(season:Season):Promise<SeasonData>{
+ const found=publicCache.get(season);
+ if(found&&found.expires>Date.now())return found.value;
+ const ids=SEASON_GIDS[season];
+ const [rank,history]=await Promise.all([sheetRows(ids.ranking),ids.history===null?Promise.resolve([]):sheetRows(ids.history)]);
+ const players=rank.slice(1).filter(r=>r[1]?.trim()).map(r=>({
+  rank:numericValue(r[0]),nick:r[1].trim(),pts:numericValue(r[2]),games:numericValue(r[3]),
+  clan:season==="S6"?(r[8]||"").trim():(r[7]||"").trim(),
+  final:season==="S6"?numericValue(r[4]):undefined,
+  top3:season==="S6"?numericValue(r[5]):numericValue(r[4]),
+  top1:season==="S6"?numericValue(r[6]):numericValue(r[5]),
+  wr:season==="S6"?percentage(r[7]):percentage(r[6])
+ })).filter(p=>p.nick&&p.nick.toLowerCase()!=="ник");
+ const clans=rank.slice(1).filter(r=>r[10]?.trim()).map(r=>({
+  rank:numericValue(r[9]),name:r[10].trim(),pts:numericValue(r[11]),players:numericValue(r[12]),
+  games:numericValue(r[13]),top3:numericValue(r[14]),wr:percentage(r[15])
+ })).filter(c=>c.name&&c.name.toLowerCase()!=="клан");
+ const records=history.slice(1).filter(r=>(r[3]||"").trim()).map((r,i)=>({
+  id:i+2,date:excelDate(r[0]),type:(r[1]||"").trim(),
+  original:(r[2]||"").trim(),nick:(r[3]||"").trim(),
+  place:r[4]!==undefined&&r[4].trim()!==""?numericValue(r[4]):null,
+  pts:numericValue(r[5])
+ })).filter(r=>r.nick);
+ const value={season,players,clans,history:records,headings:{games:rank[0]?.[3]||"Игры",clanGames:rank[0]?.[13]||"Сыгранные турниры"},fetchedAt:new Date().toISOString(),source:"Google Sheets · MCGG LEAGUE"};
+ publicCache.set(season,{value,expires:Date.now()+10*60*1000});
+ return value;
+}
+
+export default {async fetch(request:Request,env:Env){try{const url=new URL(request.url);if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request as unknown as import('@cloudflare/workers-types').Request);if(url.pathname==='/api/league'&&request.method==='GET'){
+ const season=url.searchParams.get('season')||'S8';
+ if(!Object.prototype.hasOwnProperty.call(SEASON_GIDS,season))return json({error:'Unsupported season'},400);
+ try{return json(await fetchSeason(season as Season));}
+ catch(e){console.error('League source unavailable',e);return json({error:'Google Sheets temporarily unavailable',source:'Google Sheets'},503);}
+}
+if(!env.DB)return json({error:'D1 is not configured'},503);await initialize(env.DB);if(url.pathname==='/api/presence'&&request.method==='POST'){
  if(request.headers.get('origin')!==url.origin)return json({error:'Forbidden'},403);
  const body=await request.json() as {id?:string};if(typeof body.id!=='string'||!/^[a-f0-9-]{36}$/i.test(body.id))return json({error:'Invalid visitor'},400);
  await heartbeat(env.DB,body.id);return json({ok:true});
