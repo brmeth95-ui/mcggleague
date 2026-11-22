@@ -1,1 +1,140 @@
 .hubWrap{min-height:100vh;background:#160e0d;color:#f5e5d1;font-family:Arial,Helvetica,sans-serif}.hubWrap *{box-sizing:border-box}.hubTopline{display:flex;justify-content:space-between;padding:7px max(18px,calc((100% - 1240px)/2));background:#2e1813;color:#f1b97a;font-size:10px;font-weight:800;letter-spacing:1.5px;gap:10px}.hubHeader{display:flex;align-items:center;gap:20px;justify-content:space-between;background:#1d1110;border-bottom:1px solid #76452e;padding:16px max(18px,calc((100% - 1240px)/2));position:sticky;top:0;z-index:40}.hubLogo{display:flex;align-items:center;gap:11px;background:none;border:0;color:#ffe9c3;text-align:left;cursor:pointer;min-width:205px}.hubMark{display:grid;place-items:center;background:linear-gradient(135deg,#d78537,#87341f);border:1px solid #edb15a;font:900 29px Georgia,serif;width:44px;height:44px;transform:rotate(-5deg)}.hubLogo strong{display:block;font:900 20px Impact,'Arial Black',sans-serif;letter-spacing:1.2px}.hubLogo small{display:block;color:#b8916f;font-size:9px;letter-spacing:1.4px;margin-top:3px}.hubNav{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.hubNav button,.hubLogin,.hubMenuButton{background:transparent;color:#cbb49e;border:0;padding:12px 10px;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer;border-radius:5px}.hubNav button span{font-size:16px}.hubNav button.isCurrent,.hubNav button:hover,.hubLogin.isCurrent{background:#5d2b1c;color:#ffdb9e}.hubLogin{background:#b75e29;color:#fff1d7;padding:13px 17px;border:1px solid #db8f42}.hubMenuButton{display:none}.hubMain{max-width:1240px;margin:0 auto;padding:24px 18px 70px}.hubHero{display:grid;grid-template-columns:1.5fr .65fr;min-height:460px;background:radial-gradient(circle at 65% 50%,#a74424 0,#53251c 35%,#261313 73%);border:1px solid #ac6335;overflow:hidden;position:relative}.hubHero:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(145deg,transparent 0,transparent 39px,#ffd4960a 40px,transparent 42px);pointer-events:none}.hubHeroContent{padding:62px 45px 55px;z-index:1}.hubKicker{font-size:11px;font-weight:900;color:#f1a34a;letter-spacing:2px;display:inline-flex;align-items:center;gap:10px}.hubKicker i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#f7a84b;box-shadow:0 0 10px #f1a34a}.hubHero h1{font:900 clamp(45px,7vw,93px)/.94 Impact,'Arial Black',sans-serif;letter-spacing:1px;margin:25px 0;color:#ffefd8}.hubHero h1 em{font-style:normal;color:#e7a34b}.hubHero p{line-height:1.7;font-size:15px;max-width:530px;color:#dfbc9d}.hubHeroButtons{display:flex;gap:10px;margin-top:25px;flex-wrap:wrap}.hubBtnMain,.hubBtnOutline{display:inline-block;text-decoration:none;border-radius:4px;border:1px solid #d98e42;padding:13px 20px;font-size:12px;font-weight:900;cursor:pointer}.hubBtnMain{background:#d77934;color:#220f0b}.hubBtnOutline{background:#291813;color:#f2cf9f}.hubHeroSide{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:27px;border-left:1px solid #c7804159;z-index:1}.hubCompass{font:900 85px Georgia,serif;color:#e7a24f;text-shadow:0 6px 16px #0008;letter-spacing:-18px;transform:skew(-8deg)}.hubCompass span{color:#fff0c8}.hubHeroSide strong{font:900 24px/1.2 Impact,'Arial Black',sans-serif;letter-spacing:4px;text-align:center}.hubHeroSide small{font-size:10px;color:#edb771}.hubSectionIntro{padding:42px 0 20px}.hubSectionIntro>span{color:#e9a45c;font-size:10px;font-weight:900;letter-spacing:2px}.hubSectionIntro h2{font:900 29px Impact,'Arial Black',sans-serif;letter-spacing:1px;margin:9px 0;color:#ffe4b9}.hubSectionIntro p{color:#c5aa98;font-size:13px;margin:0;line-height:1.6}.hubTiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.hubTile{display:flex;flex-direction:column;align-items:flex-start;min-height:205px;padding:23px;border:1px solid #74452f;background:linear-gradient(135deg,#36201b,#251714);text-align:left;color:#e8cba7;cursor:pointer;transition:transform .2s,border-color .2s;border-radius:4px}.hubTile:hover{transform:translateY(-3px);border-color:#d49044}.hubTileIcon{font:38px Georgia,serif;color:#da8d40;margin-bottom:12px}.hubTileEyebrow{font-size:10px;color:#c18b5f;letter-spacing:1.5px;font-weight:800}.hubTile strong{font:900 23px Impact,'Arial Black',sans-serif;color:#f8dab0;letter-spacing:1px;margin:7px 0}.hubTile>span:nth-last-child(2){font-size:12px;line-height:1.5;color:#b89f8e}.hubTileGo{margin-top:auto;padding-top:18px;font-size:11px;color:#f1a959;font-weight:900}.hubFeatured{background:linear-gradient(130deg,#84351c,#512315);border-color:#bc713e}.hubHighlight{display:flex;align-items:center;justify-content:space-between;gap:30px;padding:30px 43px;margin-top:30px;border:1px solid #a96732;background:linear-gradient(110deg,#48251b,#1e1210)}.hubHighlight h2{font:900 37px Impact,'Arial Black',sans-serif;color:#ffe2a9;margin:13px 0}.hubHighlight p{font-size:13px;color:#d6b39a;max-width:570px;line-height:1.7;margin-bottom:21px}.hubHighlightArt{font:900 125px Impact,'Arial Black',sans-serif;color:#e9a450;white-space:nowrap}.hubHighlightArt span{font-size:65px;color:#b66f37}.hubPageHeading{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:185px;padding:30px 34px;background:radial-gradient(circle at 95% 25%,#6e321f,#261613 65%);border:1px solid #76442a}.hubPageHeading h1{font:900 49px Impact,'Arial Black',sans-serif;color:#f8deb4;letter-spacing:1px;margin:12px 0}.hubFilter{display:flex;gap:6px;margin:4px 0 16px}.hubFilter button{border:1px solid #8e5433;background:#2e1d18;color:#f2c89c;padding:12px 22px;cursor:pointer;font-size:13px;font-weight:800}.hubFilter button.active{background:#bb692f;color:#27120e}.hubEmpty{background:#2b1b17;border:1px dashed #855536;text-align:center;padding:55px 26px;min-height:300px}.hubEmptyIcon{font:60px Georgia,serif;color:#a86734}.hubEmpty h3{font:900 28px Impact,'Arial Black',sans-serif;margin:12px;color:#f6d3a4}.hubEmpty p{font-size:13px;line-height:1.8;color:#c6aa91;max-width:650px;margin:0 auto 24px}.hubFakeColumns{display:flex;justify-content:space-around;padding:15px;background:#42271d;color:#f7b36f;gap:8px;font-size:11px;font-weight:900}.hubArchive{padding:0;background:#2f1c16;border:1px solid #b56b32;color:#e9c79e;text-align:left;cursor:pointer}.hubArchiveArt{font:900 80px Impact,'Arial Black',sans-serif;text-align:center;padding:24px;color:#e7a24a;background:radial-gradient(circle,#743920,#2c1714)}.hubArchiveArt span{font-size:38px}.hubArchiveBody{padding:20px}.hubArchiveBody h3,.hubComing h3{font:900 23px Impact,'Arial Black',sans-serif;color:#f9dcae;margin:10px 0}.hubArchiveBody p,.hubComing p{font-size:13px;line-height:1.6;color:#c7a88c}.hubArchiveBody>span:last-child{color:#e4a65f;font-size:12px;font-weight:900}.hubStatus,.hubComing>span{color:#e5a35d;font-size:10px;letter-spacing:1.5px;font-weight:900}.hubComing{border:1px solid #69432c;background:#2a1b17;padding:24px;min-height:220px}.hubComing small{display:block;margin-top:25px;color:#a98772}.hubTextButton{padding:9px;background:#a65c2a;border:1px solid #c98b48;color:#fff1d2;cursor:pointer;font-size:12px;font-weight:800}.hubInfoStrip{padding:18px;margin-top:20px;background:#37241a;border-left:3px solid #d38340;font-size:13px;color:#e8bea0;line-height:1.6}.hubEventBack{padding:12px 20px;background:#321e18;display:flex;justify-content:space-between;align-items:center;color:#d9ac86;font-size:12px}.hubEventBack button{background:transparent;border:0;color:#efc08f;cursor:pointer;font-weight:900}.hubEvent{background:#f5d5a8}.hubFooter{background:#140d0c;border-top:1px solid #583522;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:25px max(18px,calc((100% - 1240px)/2));color:#a7876f;font-size:11px}.hubFooter strong{color:#f5d5a2;font-size:15px}.hubFooter strong span{color:#dc8b42}@media(max-width:1080px){.hubHeader{gap:9px}.hubNav button{padding:10px 7px;font-size:11px}.hubLogo{min-width:160px}.hubLogo strong{font-size:17px}.hubTiles{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.hubTopline span:last-child{display:none}.hubHeader{flex-wrap:wrap;position:relative}.hubMenuButton{display:block;margin-left:auto}.hubNav{display:none;width:100%;order:5;flex-direction:column;align-items:stretch}.hubNavOpen{display:flex}.hubNav button{text-align:left;padding:14px}.hubLogin{padding:10px}.hubHero{grid-template-columns:1fr;min-height:0}.hubHeroContent{padding:36px 24px}.hubHeroSide{display:none}.hubTiles{grid-template-columns:1fr}.hubTile{min-height:155px}.hubHighlight{padding:24px}.hubHighlightArt{display:none}.hubPageHeading{padding:25px 18px;min-height:135px}.hubPageHeading h1{font-size:35px}.hubPageHeading .hubBtnOutline{font-size:10px;padding:10px}.hubMain{padding:15px 12px 45px}.hubFooter{padding:20px}.hubEventBack{font-size:11px}.hubEventBack span{max-width:52%;text-align:right}}
+
+/* MCGG LEAGUE 3.0 — WWS ivory / burgundy / ember-gold design system */
+:root{--wws-ivory:#f8ecdf;--wws-cream:#fff6eb;--wws-parchment:#f0d9c7;--wws-burgundy:#481318;--wws-wine:#681c20;--wws-ember:#e9571e;--wws-gold:#e8ad64;--wws-ink:#2d1516}
+body{background:var(--wws-ivory);margin:0}
+.hubWrap{color:var(--wws-ink);background:var(--wws-ivory);font-family:Inter,Arial,Helvetica,sans-serif;overflow:hidden}
+.hubTopline{background:#4b1719;color:#ffe0b2;padding-top:6px;padding-bottom:6px;font-size:9px;letter-spacing:1.6px}
+.hubHeader{background:rgba(251,238,226,.97);border-bottom:1px solid rgba(136,61,42,.15);box-shadow:0 4px 22px rgba(96,37,24,.06);z-index:50}
+.hubLogo{color:#311619;gap:12px}
+.hubMark{font-size:0;background:linear-gradient(145deg,#f6b653,#d94e23 60%,#7c1c1b);clip-path:polygon(0 10%,22% 38%,27% 0,49% 39%,73% 0,76% 38%,100% 10%,86% 82%,54% 100%,14% 82%);transform:none;border:0;width:46px;height:45px;filter:drop-shadow(0 2px 1px #a8473388)}
+.hubMark::before{content:"";display:block;width:13px;height:22px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%);background:#faedd4;transform:translate(17px,12px) rotate(-12deg)}
+.hubLogo strong{font:900 22px Impact,'Arial Black',sans-serif;color:#37161a;letter-spacing:.4px}
+.hubLogo small{font-weight:900;color:#b33c20;letter-spacing:1.8px}
+.hubNav button{color:#4c2926;font-size:12px;font-weight:800;border-radius:0;position:relative}
+.hubNav button span{display:none}
+.hubNav button.isCurrent,.hubNav button:hover{background:transparent;color:#d85021}
+.hubNav button.isCurrent:after{content:"";position:absolute;bottom:3px;left:9px;right:9px;height:2px;background:#ed5a1f}
+.hubLogin{background:linear-gradient(100deg,#ff792a,#d84417);color:white;border:1px solid #dd642d;border-radius:50px;box-shadow:0 5px 15px #de5d2730}
+.hubMenuButton{color:#67352a}
+.hubMain{max-width:1280px;padding:0 27px 74px}
+.hubHero{border:0;border-radius:0;overflow:visible;min-height:520px;display:grid;grid-template-columns:1fr .44fr;background:linear-gradient(90deg,#f8eadd 0%,#f9e4d5 28%,rgba(246,215,199,.12) 57%),url('/assets/league-hero-art.svg') center right / cover no-repeat;isolation:isolate}
+.hubHero:before{background:none}
+.hubHeroContent{padding:62px 0 60px 22px;max-width:585px}
+.hubKicker{font-weight:900;letter-spacing:1.6px;color:#a83a22;font-size:11px}
+.hubKicker i{border-radius:0;background:#e9672a;box-shadow:none;width:25px;height:2px}
+.hubHeroCrown{color:#df5f27;font-size:39px;line-height:1;margin-top:20px;margin-bottom:-3px;margin-left:125px}
+.hubHero h1{font:900 clamp(70px,8.6vw,132px)/.77 Impact,'Arial Black',sans-serif;color:#321516;text-shadow:none;letter-spacing:-1.5px;margin:0 0 28px}
+.hubHero h1 em{display:inline-block;font-size:.65em;color:#ca2c18;line-height:1.1;letter-spacing:0;margin-top:10px}
+.hubHero p{color:#452925;font-size:15px;font-weight:600;max-width:365px;line-height:1.55;margin-top:15px}
+.hubHeroButtons{margin-top:26px}
+.hubBtnMain{background:linear-gradient(100deg,#ff7a28,#e64a13);color:#fff;border:1px solid #e65218;border-radius:28px;box-shadow:0 9px 20px rgba(184,63,22,.18);padding:14px 22px}
+.hubBtnMain:hover,.hubLogin:hover{filter:brightness(1.07)}
+.hubBtnOutline{background:rgba(255,247,239,.64);color:#5e2423;border:1px solid #a77f6c;border-radius:28px;padding:14px 21px}
+.hubHeroSide{border:0;justify-content:flex-end;align-items:flex-end;padding:0 13px 26px}
+.hubHeroSideStamp{font-size:10px;color:#fff1d8;font-weight:900;letter-spacing:2px;text-shadow:0 1px 5px #4c211a}
+.hubFeatureBar{display:grid;grid-template-columns:repeat(4,1fr);background:linear-gradient(115deg,#430f16,#701f24 51%,#391218);border:1px solid #ba794a;border-radius:13px;margin:-21px 1px 0;position:relative;z-index:2;box-shadow:0 13px 25px #45121a24;overflow:hidden;color:#fff0d9}
+.hubFeatureBar>div{display:grid;grid-template-columns:34px 1fr;column-gap:9px;align-items:center;padding:22px 18px;position:relative}
+.hubFeatureBar>div:not(:last-child):after{content:"";height:43px;position:absolute;right:0;top:calc(50% - 21px);border-right:1px solid #bb7f626b}
+.hubFeatureBar>div>span{grid-row:span 2;font:29px Georgia,serif;color:#f6b668}
+.hubFeatureBar strong{font-size:11px;letter-spacing:.5px}
+.hubFeatureBar small{font-size:10px;color:#e1b9a2;white-space:normal;margin-top:3px}
+.hubSectionIntro{padding:65px 10px 21px}
+.hubSectionIntro>span,.hubSectionIntro>div>span{font-size:10px;color:#9e472c;font-weight:900;letter-spacing:1.4px}
+.hubSectionIntro h2{font:900 39px/1.05 Impact,'Arial Black',sans-serif;color:#311517;letter-spacing:.1px;margin:12px 0 0}
+.hubSectionIntro h2 em{color:#e55422;font-style:normal}
+.hubSectionIntro p{color:#674b41;font-size:13px;line-height:1.7}
+.hubSectionTwoCol{display:grid;grid-template-columns:1.2fr .8fr;align-items:end;gap:20px}
+.hubSectionTwoCol>p{padding-bottom:3px}
+.hubTiles{gap:13px}
+.hubTile{min-height:185px;border-radius:15px;position:relative;overflow:hidden;padding:20px 22px;background:linear-gradient(102deg,rgba(255,247,238,.98) 0%,rgba(255,238,224,.92) 43%,rgba(177,83,54,.12) 100%),url('/assets/league-hero-art.svg') 83% 50% / auto 225% no-repeat;border:1px solid #e4bfa6;color:#4b2824;box-shadow:0 6px 16px #a6553d14}
+.hubTile:nth-child(2){background-image:linear-gradient(106deg,#fff7ee 0%,#f7e8da 53%,#d4a58933 100%),url('/assets/league-trophy.svg');background-size:auto,155px;background-position:center,95% 55%}
+.hubTile:nth-child(3){background-image:linear-gradient(106deg,#fff7ee 0%,#f5dfcd 55%,#d5a9a055 100%),url('/assets/league-hero-art.svg');background-size:auto,auto 225%;background-position:center,83% 39%}
+.hubTile:nth-child(4){background-image:linear-gradient(106deg,#fff7ee 0%,#f1dccb 55%,#b86f5155 100%),url('/assets/league-hero-art.svg');background-position:center,90% 45%;background-size:auto,auto 220%}
+.hubTile:nth-child(5){background-image:linear-gradient(106deg,#fff7ee 0%,#f1dccb 58%,#b86f5155 100%),url('/assets/league-trophy.svg');background-size:auto,155px;background-position:center,96% 55%}
+.hubTile:nth-child(6){background-image:linear-gradient(106deg,#fff7ee 0%,#efcfba 57%,#bf896077 100%),url('/assets/league-hero-art.svg');background-size:auto,auto 210%;background-position:center,89% 60%}
+.hubTile:hover{border-color:#e26b2c;box-shadow:0 15px 22px #a6553d20}
+.hubTileIcon{display:grid;place-items:center;font:30px Georgia,serif;width:44px;height:43px;border-radius:12px;background:#fff8ee;color:#be3b25;margin-bottom:12px;box-shadow:0 3px 10px #9e50382a}
+.hubTileEyebrow{color:#b15537}
+.hubTile strong{font:900 25px Impact,'Arial Black',sans-serif;color:#341419}
+.hubTile>span:nth-last-child(2){font-weight:600;color:#62433b;max-width:175px}
+.hubTileGo{color:#d65321}
+.hubFeatured{border-color:#e3b7a0}
+.hubHighlight{min-height:340px;background:radial-gradient(circle at 76% 30%,#a02f25,#4a131b 61%,#2d1115);border:1px solid #9c4d35;border-radius:16px;margin-top:45px;overflow:hidden;padding:35px 50px;color:#fff0dc;position:relative}
+.hubHighlight:before{content:"";position:absolute;inset:0;background:url('/assets/league-hero-art.svg') right center / auto 140% no-repeat;opacity:.28;mix-blend-mode:screen;pointer-events:none}
+.hubHighlight>div{z-index:1;position:relative}
+.hubHighlight h2{font:900 48px Impact,'Arial Black',sans-serif;color:#ffdfb0}
+.hubHighlight h2 em{font-style:normal;color:#ff873e}
+.hubHighlight p{color:#f1cfc1;font-size:13px;line-height:1.7}
+.hubHighlightArt{display:grid;place-items:center;max-width:35%;width:290px}
+.hubHighlightArt img{width:100%;filter:drop-shadow(0 18px 25px #0006)}
+.hubHomeBottom{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hubHomeBottom button{display:flex;flex-direction:column;align-items:flex-start;gap:15px;padding:27px;border:1px solid #dba785;border-radius:13px;min-height:196px;background:linear-gradient(110deg,#fff7ed,#f1d5c3);cursor:pointer;text-align:left;color:#3c1c1b}
+.hubHomeBottom button:nth-child(2){background:linear-gradient(105deg,#fff2e6,#e7bda6)}
+.hubHomeBottom button>strong{font:900 29px/1.1 Impact,'Arial Black',sans-serif}
+.hubHomeBottom button>strong em{color:#d94d21;font-style:normal}
+.hubHomeBottom button>span:last-child{font-size:12px;font-weight:700}
+.hubHomeBottom button>span b{color:#ea5e24;font-size:17px;margin-left:10px}
+.hubBottomTag{color:#aa5636;font-size:10px;letter-spacing:1px;font-weight:900}
+.hubCTA{margin-top:32px;padding:30px 38px;border-radius:13px;background:linear-gradient(105deg,#361117,#6a2020 65%,#a23426);display:flex;align-items:center;justify-content:space-between;gap:15px;color:#fff3e0;border:1px solid #ac6850}
+.hubCTA span{font-size:10px;letter-spacing:1px;color:#f5bf80}
+.hubCTA h2{font:900 33px Impact,'Arial Black',sans-serif;margin:9px 0}
+.hubCTA h2 em{color:#ff8b48;font-style:normal}
+.hubCTA p{font-size:12px;color:#edc8ba}
+.hubCTA button{flex-shrink:0}
+.hubPageHeading{background:linear-gradient(90deg,#52141b,#8f3029 60%,#8f302966),url('/assets/league-hero-art.svg') right center / cover no-repeat;border:1px solid #a4573e;border-radius:0 0 15px 15px;min-height:195px}
+.hubPageHeading h1{color:#ffddb4;font-size:54px}
+.hubPageHeading .hubKicker{color:#ffc589}
+.hubPageHeading .hubBtnOutline{background:#ffe2c8;color:#651e21;border-color:#ffcf8c}
+.hubEmpty{background:#fff5ea;border:1px dashed #c88863;border-radius:12px;color:#462521}
+.hubEmptyIcon{color:#bd5028}
+.hubEmpty h3{color:#5a2220}
+.hubEmpty p{color:#705344}
+.hubFakeColumns{background:#f2d9c6;color:#9c3f28;border-radius:8px}
+.hubFilter button{background:#fff2e4;color:#753c30;border-color:#d5ad92;border-radius:6px}
+.hubFilter button.active{background:#a62b25;color:#fff5e3;border-color:#c34e29}
+.hubArchive{background:#fff6ec;border:1px solid #dca788;border-radius:12px;overflow:hidden}
+.hubArchiveArt{background:radial-gradient(circle,#c84c28,#5d1c23 73%);color:#ffd498}
+.hubArchiveBody h3,.hubComing h3{color:#652922}
+.hubArchiveBody p,.hubComing p{color:#896755}
+.hubArchiveBody>span:last-child{color:#cb4c22}
+.hubComing{background:#fff3e6;border:1px solid #dbb093;border-radius:12px}
+.hubComing>span{color:#a65a35}
+.hubComing small{color:#966d5b}
+.hubInfoStrip{background:#f7ddc8;border-left:3px solid #d85628;color:#74412e}
+.hubFooter{background:#4a141a;color:#eed1be;border-top:2px solid #b86c42}
+.hubFooter strong{color:#ffdfb0}
+.hubFooter strong span{color:#fa8b49}
+.hubEventBack{background:#572022;color:#f5cda6}
+.hubEventBack button{color:#ffd797}
+@media(max-width:1080px){.hubHero h1{font-size:90px}.hubFeatureBar strong{font-size:10px}.hubFeatureBar>div{padding:17px 10px}}
+@media(max-width:760px){
+ .hubHeader{background:#faeee2}
+ .hubNav{background:#fff2e4;padding:6px;border:1px solid #efd0b6;border-radius:8px}
+ .hubNav button{text-align:left}
+ .hubNav button span{display:inline}
+ .hubHero{min-height:440px;display:block;background:linear-gradient(90deg,#f8eadd 0%,rgba(249,233,219,.94) 40%,rgba(249,233,219,.2) 100%),url('/assets/league-hero-art.svg') 68% center / auto 100% no-repeat}
+ .hubHeroContent{padding:40px 17px 65px;position:relative}
+ .hubHero h1{font-size:clamp(57px,14vw,82px);margin-bottom:22px}
+ .hubHeroCrown{font-size:30px;margin-left:115px}
+ .hubHero p{font-size:13px;max-width:255px}
+ .hubFeatureBar{grid-template-columns:repeat(2,1fr);margin-top:-12px}
+ .hubFeatureBar>div{padding:16px 9px;grid-template-columns:26px 1fr}
+ .hubFeatureBar>div>span{font-size:22px}
+ .hubFeatureBar>div:after{display:none}
+ .hubSectionIntro{padding-top:45px}
+ .hubSectionIntro h2{font-size:32px}
+ .hubSectionTwoCol{grid-template-columns:1fr;gap:5px}
+ .hubTile{min-height:172px}
+ .hubHighlight{padding:23px;min-height:280px}
+ .hubHighlight h2{font-size:35px}
+ .hubHighlightArt{display:none}
+ .hubHomeBottom{grid-template-columns:1fr}
+ .hubCTA{flex-direction:column;align-items:flex-start;padding:25px}
+ .hubCTA h2{font-size:28px}
+ .hubPageHeading h1{font-size:40px}
+ .hubMain{padding:0 12px 45px}
+ .hubHeroButtons{gap:8px}
+ .hubBtnMain,.hubBtnOutline{padding:12px 15px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.hubTile{transition:none}}
