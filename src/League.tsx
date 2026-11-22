@@ -4,7 +4,7 @@ type Season="S8"|"S7"|"S6";
 type Ranking={rank:number;nick:string;pts:number;games:number;top3:number;top1:number;wr:number;clan:string;final?:number};
 type Clan={rank:number;name:string;pts:number;players:number;games:number;top3:number;wr:number};
 type Entry={id:number;date:string;type:string;original:string;nick:string;place:number|null;pts:number};
-type LeagueData={season:Season;players:Ranking[];clans:Clan[];history:Entry[];headings:{games:string;clanGames:string};fetchedAt:string};
+type LeagueData={season:Season;players:Ranking[];clans:Clan[];history:Entry[];headings:{games:string;clanGames:string};fetchedAt:string;mode?:"live"|"snapshot"};
 const source="https://docs.google.com/spreadsheets/d/1-wjsXxAEC9jLhJvyqNh-sw95GKrIx9dc-QAW0RU33GQ/edit?usp=sharing";
 function rate(value:number){return Number.isFinite(value)?(value*100).toFixed(2).replace(".",",")+"%":"—";}
 function day(value:string){if(!value)return "—";const m=value.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]+"."+m[2]+"."+m[1]:value;}
@@ -32,7 +32,7 @@ export default function League(){
  <div className="lgHero"><div><span>MCGG LEAGUE BY WWS</span><h2>ЛИГА WWS · АРХИВ И РЕЙТИНГ</h2><p>Результаты турниров, сезонные очки игроков и кланов</p></div><div className="lgCrown" aria-hidden="true">★</div></div>
  <div className="lgSeason" role="group" aria-label="Выбор сезона">{(["S8","S7","S6"] as const).map(s=><button key={s} className={season===s?"selected":""} onClick={()=>setSeason(s)}>СЕЗОН {s.slice(1)}</button>)}</div>
  {loading?<div className="lgMessage">Загружаю данные сезона {season} из Google-таблицы…</div>:error?<div className="lgMessage" role="alert">{error}. <a href={source} target="_blank" rel="noopener noreferrer">Посмотреть таблицу</a></div>:data&&<>
- <div className="lgInfo"><span>Источник: <a href={source} target="_blank" rel="noopener noreferrer">официальная Google-таблица MCGG LEAGUE</a></span><span>Данные обновляются с задержкой до 10 минут.</span></div>
+ <div className="lgInfo"><span>Источник: <a href={source} target="_blank" rel="noopener noreferrer">официальная Google-таблица MCGG LEAGUE</a></span><span>{data.mode==="live"?"Данные Google Sheets обновляются с задержкой до 10 минут.":"Архивная копия от 22.11.2026 · автоматическое обновление недоступно."}</span></div>
  <div className="lgMetrics">{[{name:"Игроки в рейтинге",value:data.players.length},{name:"Кланы",value:data.clans.length},{name:"Записи результатов",value:data.history.length},{name:"Сезон",value:season}].map(x=><div key={x.name}><span>{x.name}</span><strong>{x.value}</strong></div>)}</div>
  <div className="lgTabs">{([["players","Рейтинг игроков"],["clans","Рейтинг кланов"],["history","История игр"]] as const).map(([k,label])=><button key={k} className={view===k?"active":""} onClick={()=>setView(k)}>{label}</button>)}</div>
  <div className="lgFilters"><label className="lgSearch">Поиск<input value={query} onChange={e=>setQuery(e.target.value)} placeholder={view==="history"?"Ник, тип турнира…":view==="clans"?"Название клана…":"Ник или клан…"}/></label>
@@ -44,7 +44,7 @@ export default function League(){
  {view==="history"&&(visible as Entry[]).map(h=><tr key={h.id}><td>{day(h.date)}</td><td>{h.type}</td><td className="lgName">{h.nick}</td><td>{h.place===null?"—":h.place}</td><td className="lgPts">{h.pts}</td></tr>)}
  </tbody></table>{!rows.length&&<div className="lgEmpty">По этим фильтрам записей нет.</div>}</div>
  {rows.length>50&&<div className="lgPager"><button disabled={page===0} onClick={()=>setPage(p=>Math.max(0,p-1))}>Назад</button><span>Страница {Math.min(page,maxPage)+1} из {maxPage+1}</span><button disabled={page>=maxPage} onClick={()=>setPage(p=>Math.min(maxPage,p+1))}>Вперёд</button></div>}
- <div className="lgBottom">Рейтинги и PTS берутся из Google-таблицы без изменения её формул. Архив отображает записи результатов игроков, а не автоматически восстановленные отдельные матчи. Для новых игр продолжайте вносить данные в таблицу — они появятся на сайте при обновлении.</div>
+ <div className="lgBottom">Рейтинги и PTS берутся из Google-таблицы без изменения её формул. Архив отображает записи результатов игроков, а не автоматически восстановленные отдельные матчи. {data.mode==="live"?"Новые записи появятся после синхронизации Google Sheets.":"Для обновления архива после изменений в таблице потребуется повторная загрузка данных на сайт."}</div>
  </>}
  </section>;
 }
