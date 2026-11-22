@@ -8,6 +8,19 @@ export default {async fetch(request:Request,env:Env){
  if(u.pathname==="/api/tournament"&&request.method==="GET"){
   try{const r=await fetch("https://mcggleaguewws.brmeth95.workers.dev/api/tournament",{headers:{"accept":"application/json"}});if(!r.ok)return json(snapshot);return new Response(await r.text(),{headers});}catch{return json(snapshot);}
  }
+ if(u.pathname==="/api/league"&&request.method==="GET"){
+   const season=u.searchParams.get("season")||"S8";
+   if(!["S6","S7","S8"].includes(season))return json({error:"Invalid season"},400);
+   try{const upstream=await fetch("https://mcggleaguewws.brmeth95.workers.dev/api/league?season="+encodeURIComponent(season),{headers:{"accept":"application/json"},cf:{cacheTtl:0}} as RequestInit);
+    if(!upstream.ok)return json({error:"Рейтинг временно недоступен"},upstream.status);
+    return new Response(await upstream.text(),{headers});
+   }catch{return json({error:"Рейтинг временно недоступен"},503)}
+ }
+ if(u.pathname==="/api/upcoming"&&request.method==="GET"){
+   try{const asset=await env.ASSETS.fetch(new Request(new URL("/data/upcoming.json",u.origin).toString()) as unknown as import("@cloudflare/workers-types").Request);
+    if(asset.ok){const data=await asset.json() as {tournaments?:unknown};return json({tournaments:Array.isArray(data?.tournaments)?data.tournaments.slice(0,2):[]})}
+   }catch{}return json({tournaments:[]});
+ }
  if(u.pathname==="/api/presence")return json({ok:true});
  if(u.pathname==="/api/login")return json(false);
  if(u.pathname.startsWith("/api/"))return json({error:"Read-only preview"},403);

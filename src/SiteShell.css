@@ -196,3 +196,35 @@ body,.hubWrap{background:#431017;color:#fbe4cd}
 .hubPageHeading{background:linear-gradient(90deg,#3f1118,#7425238c),url('/assets/preview-hero.webp') center / cover no-repeat}
 @media(max-width:1080px){.hubHero h1{font-size:90px}}
 @media(max-width:760px){.hubHeader{background:#380f17}.hubNav{background:#53171c;border-color:#bd6c45}.hubNav button{color:#ffe6d1}.hubHero{min-height:480px;background:linear-gradient(90deg,#2c0b16ed,#3a0f1ba6 52%,#44101b2b),url('/assets/preview-mobile.webp') 58% center / cover no-repeat}.hubHeroContent{padding:35px 17px 78px}.hubHero h1{font-size:clamp(61px,13vw,87px)}.hubHero p{font-size:13px;max-width:285px}.hubFeatureBar{margin:-9px 6px 0}.hubTiles{grid-template-columns:1fr}.hubSectionIntro h2{font-size:31px}.hubHighlight h2{font-size:36px}}
+
+/* Homepage reference / sticky header and account entry points */
+.hubWrap{overflow:clip;background:#f6e4d1;min-height:100vh}
+.hubHeader{position:sticky;top:0;z-index:100;padding:6px max(20px,calc((100% - 1250px)/2));background:linear-gradient(90deg,#3f0a16,#581421 54%,#3d0a15);border-bottom:1px solid #9d3d2e;box-shadow:0 2px 9px #2409125e;min-height:50px;gap:14px}
+.hubLogo{min-width:198px;color:#fff0d8;padding:0}
+.hubLogo strong{color:#fff0d8;font:900 19px Arial,Helvetica,sans-serif;letter-spacing:-.5px}
+.hubLogo small{color:#f4ceab;font-size:12px;letter-spacing:0;font-weight:700}
+.hubMark{width:45px;height:38px;color:#ffe2a0;clip-path:polygon(0% 10%,22% 32%,25% 0%,50% 30%,75% 0%,77% 32%,100% 10%,88% 76%,50% 100%,12% 76%);background:linear-gradient(135deg,#ffe4a9,#f7b04c 50%,#b44b27);font-size:0;border:0}
+.hubMark::before{background:#5a1322;width:17px;height:20px;transform:translate(14px,13px) rotate(0)}
+.hubNav{gap:6px;flex-wrap:nowrap}
+.hubNav button{color:#fff1e4;font:700 12px Arial,sans-serif;padding:11px 8px}
+.hubNav button.isCurrent,.hubNav button:hover{color:#ffb458}
+.hubNav button.isCurrent:after{bottom:1px;background:#ff9a33}
+.hubAuthButtons{display:flex;align-items:center;gap:8px}
+.hubSignIn,.hubRegister{background:transparent;border:1px solid #f0c3a7;color:#fff2e8;padding:9px 17px;border-radius:99px;font:700 11px Arial,sans-serif;white-space:nowrap;cursor:pointer}
+.hubRegister{background:linear-gradient(#ff8d27,#e94610);border-color:#fa8a2d}
+.hubSignIn:hover,.hubRegister:hover{filter:brightness(1.1)}
+.hubMain{max-width:none;padding:0;background:#f6e3d0}
+.hubPageHeading,.hubPageHeading h1{color:#ffe3ba}
+.hubFooter{background:#f7e4d2;color:#4d2631;border-top:1px solid #e1b695}
+.hubFooter strong{color:#33141c}.hubFooter strong span{color:#b24f2a}
+.hubModalOverlay{position:fixed;inset:0;z-index:150;background:#1a030dbf;display:grid;place-items:center;padding:18px}
+.hubModal{position:relative;width:min(420px,100%);padding:32px 26px;background:linear-gradient(145deg,#fff1de,#f0c9b1);border:2px solid #d89862;border-radius:17px;color:#4d1b24;box-shadow:0 14px 45px #0c020ba3;text-align:center}
+.hubModal h2{font:900 26px Impact,"Arial Black",sans-serif;margin:5px 0 16px}
+.hubModal p{font-size:13px;line-height:1.6}
+.hubModalClose{position:absolute;right:13px;top:8px;background:none;border:0;font-size:27px;color:#663035;cursor:pointer}
+.hubModalCrown{color:#c94c24;font-size:36px}
+.hubModalNotice{padding:14px;margin:17px 0;background:#fff6ec;border:1px solid #e8bd9d;border-radius:9px;text-align:left;font-size:12px;line-height:1.5}
+.hubModalOK{width:100%;padding:13px;background:linear-gradient(#ff8a33,#e04b1a);color:#fff;border:0;border-radius:22px;font-weight:800;cursor:pointer}
+.hubModalSwitch{background:none;border:none;margin-top:12px;color:#832b27;cursor:pointer;font-size:12px}
+@media(max-width:1060px){.hubNav{gap:0}.hubNav button{font-size:11px;padding:8px 5px}.hubLogo{min-width:167px}.hubAuthButtons{gap:4px}.hubSignIn,.hubRegister{padding:8px 11px}}
+@media(max-width:760px){.hubHeader{position:sticky;top:0;min-height:58px;padding:8px 12px;flex-wrap:wrap}.hubLogo{min-width:auto;flex:1}.hubLogo strong{font-size:16px}.hubLogo small{font-size:10px}.hubMenuButton{order:3;font-size:12px;padding:8px 4px;display:block;color:#ffe7c7}.hubAuthButtons{order:2}.hubSignIn,.hubRegister{font-size:10px;padding:8px}.hubNav{order:4;width:100%;display:none;flex-direction:column;background:#4b131d;padding:8px}.hubNavOpen{display:flex}.hubNav button{font-size:13px;padding:12px}}
