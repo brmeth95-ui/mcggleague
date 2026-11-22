@@ -43,4 +43,23 @@ export default {async fetch(request:Request,env:Env){try{const url=new URL(reque
 }if(url.pathname==='/api/analytics'&&request.method==='POST'){
  const body=await request.json() as {password?:string};if(typeof body.password!=='string'||!await authed(env.DB,body.password))return json({error:'Forbidden'},403);
  return json(await readAnalytics(env.DB));
+}if(url.pathname==='/api/game-stats'&&request.method==='GET'){
+ await env.DB.prepare('CREATE TABLE IF NOT EXISTS tournament_map_stats(id INTEGER PRIMARY KEY, content TEXT NOT NULL)').run();
+ const row=await env.DB.prepare('SELECT content FROM tournament_map_stats WHERE id=1').first<{content:string}>();
+ return json({games:row?JSON.parse(row.content):[]});
+}if(url.pathname==='/api/game-stats'&&request.method==='POST'){
+ const body=await request.json() as any;
+ if(typeof body?.password!=='string'||!await authed(env.DB,body.password))return json({error:'Forbidden'},403);
+ const games=body.games;
+ if(!Array.isArray(games)||games.length>24||!games.every((g:any)=>{
+  if(!g||!Number.isInteger(g.match)||g.match<0||g.match>7||!Number.isInteger(g.game)||g.game<1||g.game>3||g.key!==g.match+'-'+g.game||!Number.isInteger(g.winner)||g.winner<0||g.winner>7||!Array.isArray(g.players)||g.players.length!==8)return false;
+  return g.players.every((p:any)=>p&&Number.isInteger(p.team)&&p.team>=0&&p.team<8&&typeof p.nick==='string'&&p.nick.length<=100&&typeof p.commander==='string'&&p.commander.length<=100&&typeof (p.level??'')==='string'&&/^\d{0,3}$/.test(p.level??'')&&['','MVP','CARRY','TANK'].includes(p.medal));
+ }))return json({error:'Invalid map statistics'},400);
+ if(new Set(games.map((g:any)=>g.key)).size!==games.length)return json({error:'Duplicate maps'},400);
+ const state=await env.DB.prepare('SELECT content FROM tournament_state WHERE id=1').first<{content:string}>();
+ const current=state?JSON.parse(state.content):initial;
+ if(!games.every((g:any)=>{const m=current.matches[g.match];return m&&[m.a,m.b].includes(g.winner)&&g.players.filter((p:any)=>p.team===m.a).length===4&&g.players.filter((p:any)=>p.team===m.b).length===4;}))return json({error:'Team or winner does not match bracket'},400);
+ await env.DB.prepare('CREATE TABLE IF NOT EXISTS tournament_map_stats(id INTEGER PRIMARY KEY, content TEXT NOT NULL)').run();
+ await env.DB.prepare('INSERT INTO tournament_map_stats(id,content) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET content=excluded.content').bind(JSON.stringify(games)).run();
+ return json({ok:true,count:games.length});
 }if(url.pathname==='/api/tournament'&&request.method==='GET'){const row=await env.DB.prepare('SELECT content FROM tournament_state WHERE id=1').first<{content:string}>();return json(row?{...JSON.parse(row.content),teams:JSON.parse(row.content).teams.map((t:any)=>({...t,reserves:Array.isArray(t.reserves)?t.reserves.slice(0,2):['','']})),matches:JSON.parse(row.content).matches.map((m:any)=>({...m,pickPlayers:Array.isArray(m.pickPlayers)?m.pickPlayers.slice(0,24):Array(24).fill('')}))}:initial)}if(url.pathname==='/api/login'&&request.method==='POST'){const b=await request.json() as {password?:string};return json(await authed(env.DB,String(b.password||'')))}if(url.pathname==='/api/tournament'&&request.method==='POST'){const b=await request.json() as any;if(typeof b.password!=='string'||!await authed(env.DB,b.password))return json({error:'Forbidden'},403);if(!Array.isArray(b.teams)||b.teams.length!==8||!b.teams.every((t:any)=>typeof t.name==='string'&&t.name.length<=100&&Array.isArray(t.players)&&t.players.length===4&&t.players.every((p:any)=>typeof p==='string'&&p.length<=100)&&Array.isArray(t.reserves)&&t.reserves.length===2&&t.reserves.every((p:any)=>typeof p==='string'&&p.length<=100))||!Array.isArray(b.matches)||b.matches.length!==8||!b.matches.every((m:any)=>[m.a,m.b].every((v:any)=>v===null||Number.isInteger(v)&&v>=0&&v<8)&&[m.sa,m.sb].every((v:any)=>Number.isInteger(v)&&v>=0&&v<=2)&&Array.isArray(m.picks)&&m.picks.length===24&&m.picks.every((p:any)=>typeof p==='string'&&p.length<=100)&&Array.isArray(m.pickPlayers)&&m.pickPlayers.length===24&&m.pickPlayers.every((p:any)=>typeof p==='string'&&p.length<=100)))return json({error:'Invalid tournament data'},400);await env.DB.prepare('INSERT INTO tournament_state(id,content) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET content=excluded.content').bind(JSON.stringify({teams:b.teams,matches:b.matches})).run();return json({ok:true})}return json({error:'Not found'},404)}catch(e){console.error(e);return json({error:'Server error'},500)}}};
