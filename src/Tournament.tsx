@@ -39,6 +39,8 @@ useEffect(()=>{
  refresh();const timer=window.setInterval(refresh,30000);
  return()=>{active=false;window.clearInterval(timer)};
 },[]);
+const [migrationBusy,setMigrationBusy]=useState(false);
+const [migrationMessage,setMigrationMessage]=useState("");
 const [statsOpen,setStatsOpen]=useState(false);const [stats,setStats]=useState<Analytics|null>(null);const [statsError,setStatsError]=useState("");
 useEffect(()=>{
  let id:string;try{const saved=localStorage.getItem("mcgg-visitor-v1");id=saved&&/^[a-f0-9-]{36}$/i.test(saved)?saved:crypto.randomUUID();localStorage.setItem("mcgg-visitor-v1",id);}catch{id=crypto.randomUUID();}
@@ -54,6 +56,48 @@ useEffect(()=>{
 useEffect(()=>{getTournament().then(d=>{setTeams(d.teams.map(t=>({...t,reserves:Array.isArray(t.reserves)?[...t.reserves.slice(0,2),...Array(Math.max(0,2-t.reserves.length)).fill("")]:["",""]})));setMatches(recalc(d.matches.map(m=>({...m,pickPlayers:Array.isArray(m.pickPlayers)?[...m.pickPlayers.slice(0,24),...Array(Math.max(0,24-m.pickPlayers.length)).fill("")]:Array(24).fill("")}))));setLoaded(true)}).catch(()=>setLoaded(true))},[]);
 const persist=async(nextTeams:Team[],nextMatches:Match[])=>{if(!admin)return;setSaving(true);try{await saveTournament({password,teams:nextTeams,matches:nextMatches})}catch(e){alert("Не удалось сохранить: "+String(e))}finally{setSaving(false)}};
 const login=async()=>{try{const ok=await verifyAdmin({password});if(ok){setAdmin(true);setLoginOpen(false);setLoginError("")}else setLoginError("Неверный пароль")}catch{setLoginError("Не удалось войти")}};
+const saveExport=(name:string,data:unknown)=>{
+ const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+ const a=document.createElement("a");a.href=url;a.download=name;a.click();window.setTimeout(()=>URL.revokeObjectURL(url),5000);
+};
+const backupLive=()=>saveExport("mcgg-main-backup.json",{format:"mcggleague-tournament-transfer-v1",createdAt:new Date().toISOString(),tournament:{teams,matches},games:mapStatistics});
+const importTest=async(e:React.ChangeEvent<HTMLInputElement>)=>{
+ const file=e.target.files?.[0];e.target.value="";if(!file||!admin||migrationBusy)return;
+ setMigrationMessage("");
+ let parsed:any;
+ try{
+  parsed=JSON.parse(await file.text());
+  const t=parsed?.tournament;
+  if(parsed?.format!=="mcggleague-tournament-transfer-v1"||!Array.isArray(t?.teams)||t.teams.length!==8||!Array.isArray(t?.matches)||t.matches.length!==8||!Array.isArray(parsed.games)||parsed.games.length>24)throw Error("Неверный формат");
+  if(!t.teams.every((x:any)=>typeof x.name==="string"&&Array.isArray(x.players)&&x.players.length===4&&x.players.every((v:any)=>typeof v==="string")&&Array.isArray(x.reserves)&&x.reserves.length===2&&x.reserves.every((v:any)=>typeof v==="string")))throw Error("Некорректные составы");
+  if(!t.matches.every((m:any)=>[m.a,m.b].every((v:any)=>v===null||Number.isInteger(v)&&v>=0&&v<8)&&[m.sa,m.sb].every((v:any)=>Number.isInteger(v)&&v>=0&&v<=2)&&Array.isArray(m.picks)&&m.picks.length===24&&Array.isArray(m.pickPlayers)&&m.pickPlayers.length===24))throw Error("Некорректная сетка");
+  if(!parsed.games.every((g:any)=>g&&Number.isInteger(g.match)&&g.match>=0&&g.match<8&&Number.isInteger(g.game)&&g.game>=1&&g.game<=3&&g.key===g.match+"-"+g.game&&Array.isArray(g.players)&&g.players.length===8&&[t.matches[g.match].a,t.matches[g.match].b].includes(g.winner)&&g.players.every((p:any)=>[t.matches[g.match].a,t.matches[g.match].b].includes(p.team)&&typeof p.nick==="string"&&typeof p.commander==="string"&&["","MVP","CARRY","TANK"].includes(p.medal))))throw Error("Некорректные данные карт");
+  if(new Set(parsed.games.map((g:any)=>g.key)).size!==parsed.games.length)throw Error("Повторяются карты");
+ }catch(err){setMigrationMessage("Импорт отклонён: "+String(err));return;}
+ if(!window.confirm("Перенести из теста 8 команд, все матчи, пики и "+parsed.games.length+" карт? Текущие данные основного турнира будут заменены. Перед переносом автоматически скачается резервная копия."))return;
+ setMigrationBusy(true);
+ const backup={teams,matches,games:mapStatistics};
+ backupLive();
+ const put=async(path:string,body:unknown)=>{
+  const r=await fetch("/api/"+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({password,...body})});
+  if(!r.ok)throw Error(path+" "+r.status+": "+(await r.text()).slice(0,180));
+ };
+ let changed=false;
+ try{
+  await put("tournament",{teams:parsed.tournament.teams,matches:parsed.tournament.matches});
+  changed=true;
+  await put("game-stats",{games:parsed.games});
+  setTeams(parsed.tournament.teams);
+  setMatches(recalc(parsed.tournament.matches));
+  setMapStatistics(parsed.games);
+  setMigrationMessage("Перенос выполнен: 8 команд, сетка, пики и "+parsed.games.length+" карт.");
+ }catch(err){
+  if(changed){
+   try{await put("tournament",{teams:backup.teams,matches:backup.matches});setMigrationMessage("Ошибка переноса. Исходная сетка восстановлена: "+String(err));}
+   catch{setMigrationMessage("Ошибка переноса и отката. Сохрани резервную копию и не вноси новые изменения: "+String(err));}
+  }else setMigrationMessage("Импорт не выполнен: "+String(err));
+ }finally{setMigrationBusy(false);}
+};
 const changeMatch=(i:number,patch:Partial<Match>)=>setMatches(old=>recalc(old.map((m,j)=>i===j?{...m,...patch}:m)));
 const label=(id:number|null)=>id===null?"Ожидается":teams[id]?.name||"Команда";
 const pickerName=(match:Match,index:number,tid:number|null,player:number)=>{
@@ -107,7 +151,7 @@ return <main><header><div className="brand"><img className="officialmagic" src="
       <article className="rulewide"><span>06</span><div><h3>СКРИНШОТЫ</h3><p>После каждой игры обязательно отправляем скриншот результата.</p></div></article>
     </div>
   </details>
-</section><nav><button className={tab==="bracket"?"active":""} onClick={()=>setTab("bracket")}><ArenaIcon name="bracket"/>Турнирная сетка</button><button className={tab==="teams"?"active":""} onClick={()=>setTab("teams")}><ArenaIcon name="users"/>Команды и составы</button><button className={tab==="ranking"?"active":""} onClick={()=>setTab("ranking")}><ArenaIcon name="trophy"/>Рейтинг команд</button><button className={tab==="rules"?"active":""} onClick={()=>setTab("rules")}><ArenaIcon name="book"/>Правила</button><button className={tab==="statistics"?"active":""} onClick={()=>setTab("statistics")}><ArenaIcon name="trophy"/>Статистика</button></nav>{tab==="bracket"?<><div className="previewlayout"><section className="previewboard"><div className="boardtitle"><div><span>TOURNAMENT / 01</span><h1><ArenaIcon name="bracket"/>Турнирная сетка</h1></div><div className="boardtag">8 команд · BO3</div></div><div className="bracketscroll" ref={bracketScrollRef} tabIndex={0} aria-label="Турнирная сетка. Прокрутите горизонтально, чтобы увидеть полуфинал и финал"><div className="bracket"><div className="round"><h2>01 / ЧЕТВЕРТЬФИНАЛ</h2>{[0,1,2,3].map(card)}</div><div className="round semifinals"><h2>02 / ПОЛУФИНАЛ</h2>{[4,5].map(card)}</div><div className="round finals"><h2>03 / ФИНАЛ</h2>{card(6)}<h2>МАТЧ ЗА БРОНЗУ</h2>{card(7)}</div></div></div><p className="swipehint">← Прокрутите сетку, чтобы увидеть следующие этапы →</p></section></div></>:tab==="rules"?<div className="rulesview"><p>Правила турнира открыты в разделе выше.</p></div>:tab==="statistics"?<Stats teams={teams} matches={matches} onSaved={setMapStatistics} admin={admin} password={password}/>:tab==="ranking"?<section className="ranking"><div className="rankinghead"><h2>РЕЙТИНГ КОМАНД</h2><p>Автоматический подсчёт: 1 выигранная карта = 1 очко. При равенстве — победы в BO3, затем меньше проигранных карт.</p></div><div className="rankingtable"><div className="rankingrow rankinglabels"><span>МЕСТО</span><span>КОМАНДА</span><span>ПОБЕДЫ BO3</span><span>КАРТЫ</span><strong>ОЧКИ</strong></div>{standings.map((r,i)=><div className={"rankingrow "+(i<3?"ranktop rank"+i:"")} key={r.id}><span className="ranknumber">#{i+1}</span><div className="rankteam"><strong className="rankname"><TeamPlaque name={r.name}/></strong><button className="mini-action" onClick={()=>setRosterView(r.id)} aria-label={"Состав "+r.name}><ArenaIcon name="users"/>Состав</button></div><span>{r.wins}</span><span>{r.maps}–{r.lost}</span><strong className="rankpts">{r.pts} PTS</strong></div>)}</div></section>:<div className="teams">{teams.map((t,i)=><article className="team" key={i}><div className="teamtop"><span>КОМАНДА {String(i+1).padStart(2,"0")}</span>{admin&&<button onClick={()=>setTeamEdit(i)}>Редактировать</button>}</div><h3 className="teamplaqueheading"><TeamPlaque name={t.name}/></h3>{t.players.map((p,j)=><div className="player" key={j}><span>{String(j+1).padStart(2,"0")}</span>{p}</div>)}<div className="reservehead">РЕЗЕРВ · 2 ИГРОКА</div>{t.reserves.map((p,j)=><div className="player reserveplayer" key={"r"+j}><span>R{j+1}</span>{p||"Не указан"}</div>)}</article>)}</div>}<footer>MCGG LEAGUE BY WWS · 4×4 · BO3 <button className="admin-link" onClick={()=>admin?(setStatsOpen(false),setAdmin(false),setPassword("")):setLoginOpen(true)}>{admin?"Выйти из редактора":"Вход организатора"}</button>{admin&&<button className="admin-link" onClick={()=>setStatsOpen(true)}>Статистика сайта</button>}{saving&&" · Сохранение…"}</footer>
+</section><nav><button className={tab==="bracket"?"active":""} onClick={()=>setTab("bracket")}><ArenaIcon name="bracket"/>Турнирная сетка</button><button className={tab==="teams"?"active":""} onClick={()=>setTab("teams")}><ArenaIcon name="users"/>Команды и составы</button><button className={tab==="ranking"?"active":""} onClick={()=>setTab("ranking")}><ArenaIcon name="trophy"/>Рейтинг команд</button><button className={tab==="rules"?"active":""} onClick={()=>setTab("rules")}><ArenaIcon name="book"/>Правила</button><button className={tab==="statistics"?"active":""} onClick={()=>setTab("statistics")}><ArenaIcon name="trophy"/>Статистика</button></nav>{tab==="bracket"?<><div className="previewlayout"><section className="previewboard"><div className="boardtitle"><div><span>TOURNAMENT / 01</span><h1><ArenaIcon name="bracket"/>Турнирная сетка</h1></div><div className="boardtag">8 команд · BO3</div></div><div className="bracketscroll" ref={bracketScrollRef} tabIndex={0} aria-label="Турнирная сетка. Прокрутите горизонтально, чтобы увидеть полуфинал и финал"><div className="bracket"><div className="round"><h2>01 / ЧЕТВЕРТЬФИНАЛ</h2>{[0,1,2,3].map(card)}</div><div className="round semifinals"><h2>02 / ПОЛУФИНАЛ</h2>{[4,5].map(card)}</div><div className="round finals"><h2>03 / ФИНАЛ</h2>{card(6)}<h2>МАТЧ ЗА БРОНЗУ</h2>{card(7)}</div></div></div><p className="swipehint">← Прокрутите сетку, чтобы увидеть следующие этапы →</p></section></div></>:tab==="rules"?<div className="rulesview"><p>Правила турнира открыты в разделе выше.</p></div>:tab==="statistics"?<Stats teams={teams} matches={matches} onSaved={setMapStatistics} admin={admin} password={password}/>:tab==="ranking"?<section className="ranking"><div className="rankinghead"><h2>РЕЙТИНГ КОМАНД</h2><p>Автоматический подсчёт: 1 выигранная карта = 1 очко. При равенстве — победы в BO3, затем меньше проигранных карт.</p></div><div className="rankingtable"><div className="rankingrow rankinglabels"><span>МЕСТО</span><span>КОМАНДА</span><span>ПОБЕДЫ BO3</span><span>КАРТЫ</span><strong>ОЧКИ</strong></div>{standings.map((r,i)=><div className={"rankingrow "+(i<3?"ranktop rank"+i:"")} key={r.id}><span className="ranknumber">#{i+1}</span><div className="rankteam"><strong className="rankname"><TeamPlaque name={r.name}/></strong><button className="mini-action" onClick={()=>setRosterView(r.id)} aria-label={"Состав "+r.name}><ArenaIcon name="users"/>Состав</button></div><span>{r.wins}</span><span>{r.maps}–{r.lost}</span><strong className="rankpts">{r.pts} PTS</strong></div>)}</div></section>:<div className="teams">{teams.map((t,i)=><article className="team" key={i}><div className="teamtop"><span>КОМАНДА {String(i+1).padStart(2,"0")}</span>{admin&&<button onClick={()=>setTeamEdit(i)}>Редактировать</button>}</div><h3 className="teamplaqueheading"><TeamPlaque name={t.name}/></h3>{t.players.map((p,j)=><div className="player" key={j}><span>{String(j+1).padStart(2,"0")}</span>{p}</div>)}<div className="reservehead">РЕЗЕРВ · 2 ИГРОКА</div>{t.reserves.map((p,j)=><div className="player reserveplayer" key={"r"+j}><span>R{j+1}</span>{p||"Не указан"}</div>)}</article>)}</div>}<footer>MCGG LEAGUE BY WWS · 4×4 · BO3 <button className="admin-link" onClick={()=>admin?(setStatsOpen(false),setAdmin(false),setPassword("")):setLoginOpen(true)}>{admin?"Выйти из редактора":"Вход организатора"}</button>{admin&&<button className="admin-link" onClick={()=>setStatsOpen(true)}>Статистика сайта</button>}{admin&&<button className="admin-link" onClick={backupLive}>Резервная копия</button>}{admin&&<label className="admin-link" style={{cursor:"pointer",display:"inline-block"}}>Импорт из теста <input type="file" accept=".json,application/json" style={{display:"none"}} onChange={importTest} disabled={migrationBusy}/></label>}{migrationBusy&&" · Перенос…"}{migrationMessage&&<span className="migration-note" role="status"> · {migrationMessage}</span>}{saving&&" · Сохранение…"}</footer>
 {admin&&statsOpen&&<div className="overlay" onClick={()=>setStatsOpen(false)}><section className="dialog detaildialog analyticsdialog" role="dialog" aria-modal="true" aria-label="Статистика сайта" onClick={e=>e.stopPropagation()}>
 <div className="dialoghead"><h3>СТАТИСТИКА САЙТА</h3><button aria-label="Закрыть статистику" onClick={()=>setStatsOpen(false)}>✕</button></div>
 <p className="analyticsintro">Доступно только организатору · обновление каждые 15 секунд</p>
@@ -265,4 +309,5 @@ main nav button{font-size:12px}main .round h2{font-size:11px}main .mini-action{f
 }
 nav{grid-template-columns:repeat(5,minmax(0,1fr))}@media(max-width:700px){nav{grid-template-columns:repeat(2,minmax(0,1fr))}nav button:last-child{grid-column:1/-1}}
 .pickdetails{display:flex;flex-direction:column;gap:4px;align-items:flex-end;min-width:0;max-width:48%;text-align:right}.pickdetails .pickvalue{max-width:100%;text-align:right;font-size:12px;overflow-wrap:anywhere}.pickdetails small{font-size:10px;color:#9a4d27}.pickstatlabel{font-size:10px;opacity:.85}
+.migration-note{font-size:12px;color:#fff0cb}
 `}</style></main>}
