@@ -2,6 +2,7 @@ import {useEffect,useState} from "react";
 import Tournament from "./Tournament";
 import HomeLanding from "./HomeLanding";
 import League from "./League";
+import TournamentHub from "./TournamentHub";
 import "./SiteShell.css";
 
 type Page="home"|"tournaments"|"ranking"|"players"|"clans"|"calendar"|"organizers"|"profile"|"event";
@@ -31,13 +32,8 @@ export default function SiteShell(){
  </header>
   {page==="event"?<><div className="hubEventBack"><button onClick={()=>go("tournaments")}>← Все турниры</button><span>Архив · 4×4 · 8 команд · BO3</span></div><div className="hubEvent"><Tournament/></div></>:
  <main className="hubMain">
- {page==="home"?<HomeLanding go={go}/>:<>
+ {page==="home"?<HomeLanding go={go}/>:page==="tournaments"?<TournamentHub go={go}/>:<>
  <section className="hubPageHeading"><div><span className="hubKicker">MCGG LEAGUE / {labels[page].toUpperCase()}</span><h1>{labels[page].toUpperCase()}</h1></div><button className="hubBtnOutline" onClick={()=>go("home")}>← На главную</button></section>
- {page==="tournaments"&&<><div className="hubSectionIntro"><span>АРХИВ И СОБЫТИЯ</span><h2>ТУРНИРЫ ЛИГИ</h2><p>Турниры от 16 участников получают отдельные страницы; небольшие фасткапы остаются в истории игр.</p></div><div className="hubTiles hubTournamentTiles">
- <button className="hubArchive" onClick={()=>go("event")}><div className="hubArchiveArt">4<span>×</span>4</div><div className="hubArchiveBody"><span className="hubStatus">СУЩЕСТВУЮЩИЙ ТУРНИР</span><h3>4×4 · BEST OF 3</h3><p>21.11.2026 · 8 команд / 32 игрока</p><span>Открыть сетку, составы и статистику ↗</span></div></button>
- <div className="hubComing"><span>НОВЫЙ ФОРМАТ</span><h3>ДРАФТ 16 / 32</h3><p>Будущие страницы регистрации, лобби, этапов и результатов.</p><small>Шаблон готовится</small></div>
- <div className="hubComing"><span>КОМАНДНЫЕ ТУРНИРЫ</span><h3>4×4 · 16 / 32</h3><p>Сетки, команды, составы и карты BO3.</p><small>Шаблон готовится</small></div>
- </div><div className="hubInfoStrip">История фасткапов на 8 участников будет отображаться отдельным списком без индивидуальных страниц. ID присваивается каждому турниру.</div></>}
  {page==="ranking"&&<League/>}
  {page==="players"&&<><div className="hubSectionIntro"><span>ПРОФИЛИ</span><h2>ИГРОКИ</h2><p>Поиск по никнейму, история смены имени, статистика по сезонам и достижения.</p></div><div className="hubEmpty"><span className="hubEmptyIcon">♙</span><h3>КАТАЛОГ ИГРОКОВ</h3><p>Карточки игроков появятся после подключения постоянных ID и данных архива. Не создаём вымышленные профили.</p><div className="hubFakeColumns"><span>НИК</span><span>КЛАН</span><span>PTS</span><span>WR</span></div></div></>}
  {page==="clans"&&<><div className="hubSectionIntro"><span>СООБЩЕСТВА</span><h2>КЛАНЫ</h2><p>Профили кланов, составы, рейтинги и переходы игроков между командами.</p></div><div className="hubEmpty"><span className="hubEmptyIcon">♜</span><h3>КАТАЛОГ КЛАНОВ</h3><p>Следующим шагом подключим существующий рейтинг кланов и реальные составы из базы.</p><div className="hubFakeColumns"><span>КЛАН</span><span>ИГРОКИ</span><span>PTS</span><span>ТОП-3</span></div></div></>}
