@@ -17,7 +17,8 @@ export default {async fetch(request:Request,env:Env){
    try{
     const archive=await env.ASSETS.fetch(new Request(new URL("/data/league-"+season+".json.gz",u.origin).toString()) as unknown as import("@cloudflare/workers-types").Request);
     if(!archive.ok||!archive.body)throw new Error("Missing season archive");
-    const text=await new Response(archive.body.pipeThrough(new DecompressionStream("gzip"))).text();
+    const stream=(archive.body as any).pipeThrough(new DecompressionStream("gzip") as any);
+    const text=await new Response(stream as ReadableStream<Uint8Array>).text();
     const data=JSON.parse(text) as {season?:string;players?:unknown;clans?:unknown};
     if(data.season!==season||!Array.isArray(data.players)||!Array.isArray(data.clans))throw new Error("Invalid season archive");
     return json({...data,mode:"snapshot"});
