@@ -11,10 +11,17 @@ export default {async fetch(request:Request,env:Env){
  if(u.pathname==="/api/league"&&request.method==="GET"){
    const season=u.searchParams.get("season")||"S8";
    if(!["S6","S7","S8"].includes(season))return json({error:"Invalid season"},400);
-   try{const upstream=await fetch("https://mcggleaguewws.brmeth95.workers.dev/api/league?season="+encodeURIComponent(season),{headers:{"accept":"application/json"},cf:{cacheTtl:0}} as RequestInit);
-    if(!upstream.ok)return json({error:"Рейтинг временно недоступен"},upstream.status);
-    return new Response(await upstream.text(),{headers});
-   }catch{return json({error:"Рейтинг временно недоступен"},503)}
+   // Preview must remain independent from the production Worker's reachability.
+   // The compressed archived baseline is the same read-only backup bundled on main.
+   // This mirrors production's fallback and does not modify D1 or the source sheet.
+   try{
+    const archive=await env.ASSETS.fetch(new Request(new URL("/data/league-"+season+".json.gz",u.origin).toString()) as unknown as import("@cloudflare/workers-types").Request);
+    if(!archive.ok||!archive.body)throw new Error("Missing season archive");
+    const text=await new Response(archive.body.pipeThrough(new DecompressionStream("gzip"))).text();
+    const data=JSON.parse(text) as {season?:string;players?:unknown;clans?:unknown};
+    if(data.season!==season||!Array.isArray(data.players)||!Array.isArray(data.clans))throw new Error("Invalid season archive");
+    return json({...data,mode:"snapshot"});
+   }catch(e){console.error("Preview season archive unavailable",e);return json({error:"Рейтинг временно недоступен"},503);}
  }
  if(u.pathname==="/api/upcoming"&&request.method==="GET"){
    try{const asset=await env.ASSETS.fetch(new Request(new URL("/data/upcoming.json",u.origin).toString()) as unknown as import("@cloudflare/workers-types").Request);

@@ -231,3 +231,10 @@ body,.hubWrap{background:#431017;color:#fbe4cd}
 
 .hubWordmark{width:139px;height:44px;object-fit:contain;object-position:left center;display:block;filter:drop-shadow(0 2px 3px #14050b80)}
 @media(max-width:760px){.hubWordmark{width:95px;height:38px}.hubMark{width:34px;height:36px}.hubMark::before{transform:translate(10px,12px)}}
+
+/* Replace the double logo with the single approved gold wordmark */
+.hubHeader{min-height:65px;padding-top:5px;padding-bottom:5px}
+.hubLogo{flex-shrink:0;min-width:0;width:183px;min-height:54px;display:flex;align-items:center;justify-content:flex-start;overflow:visible}
+.hubWordmark{width:183px;height:64px;object-fit:fill;object-position:left center;filter:drop-shadow(0 2px 3px #14050b80)}
+@media(max-width:1060px){.hubLogo{width:154px}.hubWordmark{width:154px;height:58px}}
+@media(max-width:760px){.hubHeader{min-height:65px}.hubLogo{width:106px;min-height:42px}.hubWordmark{width:106px;height:43px}}

@@ -55,7 +55,7 @@ export default function HomeLanding({go}:{go:(v:Page)=>void}){
  return <div className="hlRoot">
   <section className="hlHero" aria-label="Главный экран MCGG LEAGUE">
    <div className="hlHeroInner">
-    <div className="hlGameBrand"><img src={asset+"official-game-logo.webp"} alt="" onError={e=>e.currentTarget.style.display="none"}/><span>MAGIC CHESS<br/><b>GO GO</b> <i>×</i> FAIRY TAIL</span></div>
+    <div className="hlGameBrand"><img src={asset+"official-game-logo.webp"} alt="Magic Chess Go Go" /></div>
     <span className="hlOverline">MCGG · СЕЗОН 8</span>
     <h1>«ВЕЛИКОЕ<br/>МАГИЧЕСКОЕ<br/>СТОЛКНОВЕНИЕ»</h1>
     <p>Магия соревнований начинается здесь. Участвуй в турнирах MCGG LEAGUE by WWS!</p>
@@ -72,7 +72,7 @@ export default function HomeLanding({go}:{go:(v:Page)=>void}){
    <section className="hlLeaderSection">
     <div className="hlSectionHeading"><h2><span>❧</span> Топ сезона <span>❧</span></h2><div className="hlTabs"><button className={view==="players"?"active":""} onClick={()=>setView("players")}>Игроки</button><button className={view==="clans"?"active":""} onClick={()=>setView("clans")}>Кланы</button></div></div>
     <div className="hlLeaderBoard">
-     {pending&&!data?<p className="hlStatus">Загружаю рейтинг сезона S8…</p>:failed&&!data?<p className="hlStatus">Рейтинг временно недоступен.</p>:leaders.length===0?<p className="hlStatus">Пока нет опубликованных результатов.</p>:leaders.map((item,i)=><div key={view==="players"?(item as Player).nick:(item as Clan).name} className="hlLeader">
+     {pending&&!data?<p className="hlStatus">Загружаю рейтинг сезона S8…</p>:failed&&!data?<p className="hlStatus">Не удалось загрузить рейтинг. Попробуйте обновить страницу.</p>:leaders.length===0?<p className="hlStatus">Пока нет опубликованных результатов.</p>:leaders.map((item,i)=><div key={view==="players"?(item as Player).nick:(item as Clan).name} className="hlLeader">
       <span className={"hlPosition pos"+i}>{i+1}</span><span className="hlLeaderAvatar">{view==="players"?"♟":"♜"}</span><span className="hlLeaderName">{view==="players"?(item as Player).nick:(item as Clan).name}</span><strong>{item.pts} <small>PTS</small></strong>
      </div>)}
     </div>
