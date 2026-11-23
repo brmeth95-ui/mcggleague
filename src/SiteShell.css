@@ -238,3 +238,10 @@ body,.hubWrap{background:#431017;color:#fbe4cd}
 .hubWordmark{width:183px;height:64px;object-fit:fill;object-position:left center;filter:drop-shadow(0 2px 3px #14050b80)}
 @media(max-width:1060px){.hubLogo{width:154px}.hubWordmark{width:154px;height:58px}}
 @media(max-width:760px){.hubHeader{min-height:65px}.hubLogo{width:106px;min-height:42px}.hubWordmark{width:106px;height:43px}}
+
+/* Correct logo proportions — user-provided high-quality transparent graphic */
+.hubHeader{min-height:90px;padding-top:2px;padding-bottom:2px}
+.hubLogo{width:176px;min-width:176px;height:86px;min-height:86px;padding:0;overflow:visible;display:flex;justify-content:flex-start;align-items:center}
+.hubWordmark{width:170px;height:auto;max-height:86px;object-fit:contain;object-position:left center;aspect-ratio:1062 / 536;display:block;filter:drop-shadow(0 2px 3px #18061266);image-rendering:auto}
+@media(max-width:1060px){.hubHeader{min-height:84px}.hubLogo{width:160px;min-width:160px;height:80px;min-height:80px}.hubWordmark{width:154px;height:auto;max-height:78px}}
+@media(max-width:760px){.hubHeader{min-height:65px}.hubLogo{width:111px;min-width:111px;height:58px;min-height:58px}.hubWordmark{width:108px;height:auto;max-height:56px}}
